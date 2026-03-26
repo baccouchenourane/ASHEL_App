@@ -1,312 +1,77 @@
-/* Palette de couleurs basée sur ton logo */
+/* ==========================================================================
+   ASHAL_App - DESIGN SYSTEM "JASMIN DIGITAL"
+   ========================================================================== */
+
 :root {
-  --ashel-blue: #0A5263; /* Le bleu-vert foncé du nom "ASHEL" */
-  --ashel-green: #0A9B8D; /* Le vert émeraude du "check" */
-  --ashel-red: #C12A32; /* Le rouge tunisien du croissant/étoile */
-  --ashel-white: #FFFFFF;
-  
-  --bg-dark: #0f1219; /* Fond sombre moderne */
-  --text-primary: #FFFFFF;
-  --text-secondary: #a0aec0;
+  --ashal-red: #E70011;       /* Rouge National */
+  --ashal-blue: #0077c0;      /* Bleu Sidi Bou */
+  --ashal-gold: #D4AF37;      /* Or (Prestige) */
+  --bg-gradient: linear-gradient(160deg, #f8fafc 0%, #e2e8f0 100%);
+  --glass: rgba(255, 255, 255, 0.85);
+  --text-dark: #0f172a;
+  --radius-xl: 35px;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
-  color: var(--text-primary);
   margin: 0;
-}
-
-.auth-container {
-  height: 100vh;
+  background: var(--bg-gradient);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--bg-dark);
-}
-
-.auth-card {
-  text-align: center;
-  width: 100%;
-  max-width: 420px;
-  padding: 40px;
-}
-
-/* LE LOGO TEXTUEL "ASHEL" */
-.logo-text-ashel {
-  color: var(--ashel-blue); /* La couleur précise du logo */
-  font-family: 'Inter', sans-serif; /* Tu peux chercher une police plus grasse si besoin */
-  font-weight: 800; /* Très gras pour correspondre au logo */
-  font-size: 3.5rem;
-  margin: 0;
-  letter-spacing: -2px; /* Resserre les lettres comme dans le logo */
-}
-
-.app-slogan {
-  color: var(--ashel-blue);
-  font-size: 0.8rem;
-  font-weight: 400;
-  margin-top: -5px;
-  margin-bottom: 40px;
-}
-
-.title-text { font-size: 2rem; margin-bottom: 10px; color: var(--text-primary); }
-.subtitle-text { color: var(--text-secondary); margin-bottom: 30px; font-size: 1rem; line-height: 1.5; }
-
-/* INPUTS SINSPIRES DE NAFATH */
-.input-with-icon {
-  display: flex;
-  align-items: center;
-  background: #1a1f29;
-  border: 1px solid #333;
-  color: white;
-  padding: 15px;
-  border-radius: 12px;
-  width: 100%;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-}
-
-.input-icon { color: var(--text-secondary); margin-right: 15px; }
-.input-with-icon input {
-  border: none;
-  background: transparent;
-  color: white;
-  width: 100%;
-  outline: none;
-}
-
-/* BOUTONS AVEC LA COULEUR ASHEL */
-.btn-primary-ashel {
-  background-color: var(--ashel-white);
-  color: black;
-  border: none;
-  padding: 16px;
-  width: 100%;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: all 0.2s ease;
-}
-
-.btn-primary-ashel:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1); }
-
-.btn-secondary-ashel {
-  background: transparent;
-  color: var(--ashel-green); /* Couleur verte du check */
-  border: 1px solid var(--ashel-green);
-  padding: 16px;
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-.btn-back-ashel {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid #333;
-  padding: 16px;
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-/* ANIMATION BIOMÉTRIE (Nafath Style) */
-.biometric-icon-container {
-  margin-bottom: 40px;
-  display: flex;
-  justify-content: center;
-}
-
-.bio-illustration {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.pulse-animation {
-  animation: pulse-bio 2s infinite ease-in-out;
-}
-
-@keyframes pulse-bio {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(10, 155, 141, 0.7); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(10, 155, 141, 0); }
-  100% { transform: scale(1); }
-}
-
-.guidelines-list {
-  text-align: left;
-  display: inline-block;
-  color: var(--text-secondary);
-  margin-bottom: 30px;
-}
-.logo-container {
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.main-logo-img {
-  width: 180px; /* Ajuste la taille selon tes besoins */
-  height: auto;
-  margin-bottom: 10px;
-  /* Optionnel : si ton image a un fond blanc, tu peux le rendre transparent ou arrondir */
-  border-radius: 15px; 
-}
-
-.app-slogan {
-  color: var(--ashel-blue);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-/* On s'assure que le conteneur de la carte ne cache pas le logo */
-.auth-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.step-indicator {
-  color: var(--ashel-green);
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin-top: 10px;
-}
-
-.biometric-box {
-  background: #1a1f29;
-  padding: 40px;
-  border-radius: 20px;
-  margin: 20px 0;
-  border: 1px dashed #333;
-}
-
-/* Style pour le code SMS (OTP) */
-.otp-container {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 30px 0;
-}
-
-.otp-input {
-  width: 50px;
-  height: 60px;
-  background: #1a1f29;
-  border: 1px solid #333;
-  border-radius: 12px;
-  color: white;
-  font-size: 1.5rem;
-  text-align: center;
-  font-weight: bold;
-}
-
-.otp-input:focus {
-  border-color: var(--ashel-green);
-  outline: none;
-}
-
-.resend-text {
-  margin-top: 20px;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
-
-.resend-text span {
-  color: var(--ashel-green);
-  cursor: pointer;
-  text-decoration: underline;
-}
-.profile-page-container {
-  max-width: 500px;
-  margin: 0 auto;
-  background: #f8f9fa; /* Fond clair pour contraster avec le dark login */
   min-height: 100vh;
-  padding-bottom: 30px;
-  color: #1a1f29;
 }
 
-.profile-header {
-  background: linear-gradient(135deg, #0A5263 0%, #0A9B8D 100%);
-  padding: 30px 20px 50px 20px;
-  color: white;
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
-}
-
-.header-top { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.icon-btn { cursor: pointer; opacity: 0.9; }
-
-.user-info-section { text-align: center; }
-.avatar-wrapper { position: relative; display: inline-block; }
-.profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid white; object-fit: cover; }
-.verified-badge { 
-  position: absolute; bottom: 5px; right: 5px; background: #0A9B8D; 
-  padding: 4px; border-radius: 50%; border: 2px solid white;
-}
-
-/* SECTION DOCUMENTS (CARDS) */
-.dashboard-section { padding: 20px; margin-top: -30px; }
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.section-header h2 { font-size: 1.1rem; color: #333; }
-.see-all { color: #0A9B8D; font-weight: 600; font-size: 0.9rem; }
-
-.horizontal-scroll {
-  display: flex;
-  gap: 15px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-}
-
-.doc-card {
-  min-width: 140px;
-  height: 180px;
-  border-radius: 20px;
-  padding: 15px;
+/* Container principal type "Smartphone" */
+.app-container {
+  width: 100vw;
+  max-width: 400px;
+  height: 820px;
+  background: var(--glass);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 45px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+}
+
+/* Motifs en arrière-plan (Touche Tunisienne) */
+.moucharabieh-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("https://www.transparenttextures.com/patterns/arabesque.png");
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* Bouton Premium ASHAL */
+.btn-ashal {
+  background: var(--text-dark);
   color: white;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border: none;
+  padding: 20px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: 0.4s all ease;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
-.cin-card { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-.passport-card { background: linear-gradient(135deg, #3498db, #2980b9); }
-.driving-card { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-
-.card-logo { font-weight: 900; font-size: 0.7rem; opacity: 0.8; }
-.card-label { font-weight: 600; font-size: 1rem; }
-
-/* SERVICES LIST */
-.services-grid-section { padding: 0 20px; }
-.services-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-
-.service-item {
-  background: white;
-  padding: 15px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: transform 0.2s;
+.btn-ashal:hover {
+  background: var(--ashal-red);
+  transform: translateY(-3px) scale(1.02);
 }
 
-.service-item:active { transform: scale(0.98); }
+/* Animation de fondu */
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
 
-.service-icon { padding: 12px; border-radius: 14px; }
-.amende-bg { background-color: #C12A32; } /* Rouge pour les amendes */
-.service-bg { background-color: #0A5263; } /* Bleu ASHEL */
-.participation-bg { background-color: #f1c40f; } /* Jaune pour participation */
-
-.service-content h3 { margin: 0; font-size: 1rem; color: #1a1f29; }
-.service-content p { margin: 0; font-size: 0.8rem; color: #7f8c8d; }
-.arrow { margin-left: auto; color: #bdc3c7; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

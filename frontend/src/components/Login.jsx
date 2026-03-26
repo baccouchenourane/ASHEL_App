@@ -1,83 +1,77 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, KeyRound } from 'lucide-react';
-import logoAshel from '../assets/logo_ashel.png'; 
+import { Mail, Lock, ShieldCheck, Fingerprint } from 'lucide-react';
 
 const Login = () => {
-  const [step, setStep] = useState(1);
   const navigate = useNavigate();
-
-  // Illustration pour l'étape de biométrie
-  const faceIdIllustration = "https://img.freepik.com/vecteurs-premium/concept-reconnaissance-faciale-pour-authentification-biometrique_199064-1100.jpg?w=826";
-
-  const handleNext = () => {
-    if (step === 1) {
-      setStep(2); // Passe à la biométrie
-    } else {
-      navigate('/home'); // Redirection vers l'accueil
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   return (
-    <div className="auth-container dark-theme">
+    <div className="app-container">
+      <div className="moucharabieh-overlay"></div>
       
-      {/* --- ÉTAPE 1 : IDENTIFICATION --- */}
-      {step === 1 && (
-        <div className="auth-card central-content">
-          <div className="logo-container">
-            <img src={logoAshel} alt="ASHEL Logo" className="main-logo-img" />
-            <p className="app-slogan">SERVICES QUOTIDIENS. SIMPLIFIÉS.</p>
+      <div style={{ padding: '50px 30px', flex: 1, display: 'flex', flexDirection: 'column', zIndex: 2 }}>
+        
+        {/* Header avec Emblème */}
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ 
+            display: 'inline-flex', padding: '20px', background: 'white', 
+            borderRadius: '25px', boxShadow: '0 15px 35px rgba(0,0,0,0.05)' 
+          }}>
+            <ShieldCheck size={45} color="var(--ashal-red)" />
           </div>
-          
-          <h2 className="title-text">Identifiez-vous</h2>
-          <p className="subtitle-text">Accédez en toute sécurité à vos services numériques gouvernementaux.</p>
-          
-          <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-            <div className="input-with-icon">
-              <Mail className="input-icon" size={20} />
-              <input type="email" placeholder="Email ou Numéro CIN" required />
+          <h1 style={{ marginTop: '20px', fontSize: '2.2rem', fontWeight: '900', letterSpacing: '-1px' }}>
+            ASHAL <span style={{ color: 'var(--ashal-red)' }}>App</span>
+          </h1>
+          <p style={{ fontSize: '0.7rem', letterSpacing: '3px', opacity: 0.5, fontWeight: '700' }}>
+            RÉPUBLIQUE TUNISIENNE
+          </p>
+        </div>
+
+        <div className="fade-in">
+          <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '10px' }}>Bienvenue</h2>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '40px' }}>
+             أهلا بك في تطبيق أسهل <br/>
+            Identifiez-vous pour accéder à vos documents officiels.
+          </p>
+
+          <form onSubmit={(e) => { e.preventDefault(); setLoading(true); setTimeout(() => navigate('/home'), 1500); }}>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ position: 'relative' }}>
+                <Mail size={18} style={{ position: 'absolute', left: '18px', top: '20px', color: '#94a3b8' }} />
+                <input 
+                  type="text" 
+                  placeholder="Numéro CIN" 
+                  style={{ width: '100%', padding: '20px 20px 20px 50px', borderRadius: '20px', border: '1px solid #e2e8f0', background: 'white', outline: 'none' }} 
+                  required 
+                />
+              </div>
             </div>
-            
-            <div className="input-with-icon">
-              <KeyRound className="input-icon" size={20} />
-              <input type="password" placeholder="Mot de passe" required />
+
+            <div style={{ marginBottom: '35px' }}>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '18px', top: '20px', color: '#94a3b8' }} />
+                <input 
+                  type="password" 
+                  placeholder="Mot de passe" 
+                  style={{ width: '100%', padding: '20px 20px 20px 50px', borderRadius: '20px', border: '1px solid #e2e8f0', background: 'white', outline: 'none' }} 
+                  required 
+                />
+              </div>
             </div>
-            
-            <div className="options-row">
-              <span className="forgot-pass">Mot de passe oublié ?</span>
-            </div>
-            
-            <button type="submit" className="btn-primary-ashel">Suivant</button>
-            <button type="button" className="btn-secondary-ashel" onClick={() => navigate('/register')}>
-              Nouvel utilisateur ? S'inscrire
+
+            <button type="submit" className="btn-ashal" style={{ width: '100%' }}>
+              {loading ? "VÉRIFICATION..." : "S'IDENTIFIER"}
             </button>
           </form>
         </div>
-      )}
 
-      {/* --- ÉTAPE 2 : BIOMÉTRIE --- */}
-      {step === 2 && (
-        <div className="auth-card central-content">
-          <div className="biometric-icon-container">
-            <img src={faceIdIllustration} alt="Face ID Animation" className="bio-illustration pulse-animation" />
-          </div>
-          
-          <h2 className="title-text">Vérification d'identité</h2>
-          <p className="subtitle-text">Placez votre visage dans le cadre de la caméra pour finaliser la connexion.</p>
-          
-          <div className="guidelines-list">
-            <p>✓ Éclairage suffisant</p>
-            <p>✓ Visage bien visible</p>
-          </div>
-          
-          <button type="button" className="btn-primary-ashel" onClick={handleNext}>
-            Démarrer le scan
-          </button>
-          <button type="button" className="btn-back-ashel" onClick={() => setStep(1)}>
-            Retour
-          </button>
+        {/* Biométrie en bas */}
+        <div style={{ marginTop: 'auto', textAlign: 'center' }}>
+          <Fingerprint size={40} color="var(--ashal-red)" style={{ opacity: 0.3, cursor: 'pointer' }} />
+          <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '10px' }}>Support Biométrique ANCE</p>
         </div>
-      )}
+      </div>
     </div>
   );
 };
