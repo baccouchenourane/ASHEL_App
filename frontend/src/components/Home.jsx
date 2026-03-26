@@ -1,76 +1,127 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, CreditCard, Activity, Bell, Home as HomeIcon, User, Search, QrCode } from 'lucide-react';
+import { 
+  LogOut, 
+  Home as HomeIcon, 
+  FileText, 
+  Settings, 
+  ShieldAlert, 
+  MessageSquare, 
+  User, 
+  Bell 
+} from 'lucide-react';
+import '../App.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  
+  // Récupération sécurisée des données de l'identité numérique
+  const user = JSON.parse(localStorage.getItem('user_ashel')) || { nom: "Citoyen Tunisien" };
+
+  const handleLogout = () => {
+    // Retour à la page de connexion
+    navigate('/');
+  };
 
   return (
     <div className="app-container">
       <div className="moucharabieh-overlay"></div>
       
-      <div style={{ padding: '40px 25px', flex: 1, zIndex: 2 }}>
+      {/* HEADER : IDENTITÉ ET NOTIFICATIONS */}
+      <div style={{ padding: '50px 25px 20px', background: 'white', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9' }}>
+        <div className="fade-in">
+          <p style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600' }}>Bienvenue,</p>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#1A1D23' }}>{user.nom}</h3>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '12px', position: 'relative' }}>
+                <Bell size={20} color="#64748B" />
+                <span style={{ position: 'absolute', top: '8px', right: '8px', width: '8px', height: '8px', background: '#E70011', borderRadius: '50%', border: '2px solid white' }}></span>
+            </div>
+            <div onClick={handleLogout} style={{ cursor: 'pointer', padding: '10px', background: '#FEF2F2', borderRadius: '12px' }}>
+                <LogOut size={20} color="#E70011" />
+            </div>
+        </div>
+      </div>
+      
+      {/* CONTENU PRINCIPAL */}
+      <div style={{ padding: '25px', zIndex: 2, flex: 1, overflowY: 'auto' }}>
         
-        {/* Header avec Avatar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'var(--ashal-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>
-              M
-            </div>
-            <div>
-              <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '2px' }}>Aslema,</p>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Mohamed Ali</h3>
-            </div>
+        {/* CARTE D'IDENTITÉ NUMÉRIQUE (Module Authentification) */}
+        <div className="fade-in" style={{ background: 'linear-gradient(135deg, #0056D2, #003FA3)', color: 'white', padding: '20px', borderRadius: '25px', marginBottom: '25px', boxShadow: '0 10px 20px rgba(0,86,210,0.2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+            <ShieldAlert size={24} opacity={0.8} />
+            <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontWeight: 'bold' }}>STATUT : CERTIFIÉ</span>
           </div>
-          <div style={{ position: 'relative', padding: '10px', background: 'white', borderRadius: '15px', boxShadow: '0 10px 20px rgba(0,0,0,0.03)' }}>
-            <Bell size={22} color="#1e293b" />
-            <div style={{ position: 'absolute', top: '10px', right: '10px', width: '8px', height: '8px', background: 'var(--ashal-red)', borderRadius: '50%', border: '2px solid white' }}></div>
-          </div>
+          <p style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '5px' }}>Identité Numérique Unique</p>
+          <h4 style={{ fontSize: '1rem', letterSpacing: '1px' }}>CIN DIGITALE ACTIVE</h4>
         </div>
 
-        {/* Carte CIN Digitale (Look Futuriste) */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-          padding: '30px', borderRadius: '30px', color: 'white', marginBottom: '35px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', position: 'relative'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '2px', fontWeight: 'bold', opacity: 0.6 }}>CARTE D'IDENTITÉ DIGITALE</span>
-            <QrCode size={24} color="var(--ashal-gold)" />
-          </div>
-          <p style={{ fontSize: '1.3rem', fontWeight: '700', letterSpacing: '1px', marginBottom: '5px' }}>MOHAMED BEN ALI</p>
-          <p style={{ fontSize: '0.8rem', opacity: 0.5 }}>ID: 098****43 | Nationalité: TN</p>
+        <h4 style={{ fontSize: '0.9rem', marginBottom: '15px', color: '#1A1D23', fontWeight: '700' }}>Services SMART e-GOV</h4>
+
+        {/* GRILLE DES MODULES DE TON PROJET */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }} className="fade-in">
+            
+            {/* MODULE 2 : E-ADMINISTRATION (Vers ta tâche actuelle) */}
+            <div className="service-card" onClick={() => navigate('/e-admin')}>
+                <div className="icon-box" style={{ background: '#EEF2FF' }}>
+                    <FileText color="#0056D2" />
+                </div>
+                <p style={{ fontSize: '0.8rem', fontWeight: '700' }}>E-Admin</p>
+                <p style={{ fontSize: '0.6rem', color: '#94A3B8' }}>Extraits & Suivi</p>
+            </div>
+
+            {/* MODULE 1 : E-AMENDES */}
+            <div className="service-card" onClick={() => alert("Module E-Amendes bientôt disponible")}>
+                <div className="icon-box" style={{ background: '#FFF7ED' }}>
+                    <ShieldAlert color="#EA580C" />
+                </div>
+                <p style={{ fontSize: '0.8rem', fontWeight: '700' }}>E-Amendes</p>
+                <p style={{ fontSize: '0.6rem', color: '#94A3B8' }}>Consultation & Paiement</p>
+            </div>
+
+            {/* MODULE 3 : E-PARTICIPATION */}
+            <div className="service-card" onClick={() => alert("Module Citizen Pulse bientôt disponible")}>
+                <div className="icon-box" style={{ background: '#F0FDF4' }}>
+                    <MessageSquare color="#16A34A" />
+                </div>
+                <p style={{ fontSize: '0.8rem', fontWeight: '700' }}>Citizen Pulse</p>
+                <p style={{ fontSize: '0.6rem', color: '#94A3B8' }}>Signalements</p>
+            </div>
+
+            {/* PROFIL / PARAMÈTRES */}
+            <div className="service-card">
+                <div className="icon-box" style={{ background: '#F8FAFC' }}>
+                    <User color="#64748B" />
+                </div>
+                <p style={{ fontSize: '0.8rem', fontWeight: '700' }}>Mon Profil</p>
+                <p style={{ fontSize: '0.6rem', color: '#94A3B8' }}>Données CIN</p>
+            </div>
         </div>
 
-        {/* Grid de Services Innovant */}
-        <h4 style={{ fontWeight: '800', marginBottom: '20px', fontSize: '1rem' }}>Services ASHAL</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div onClick={() => navigate('/e-administration')} style={{ background: 'white', padding: '25px', borderRadius: '25px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 15px 30px rgba(0,0,0,0.02)' }}>
-            <div style={{ background: '#eff6ff', width: '50px', height: '50px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-              <FileText color="var(--ashal-blue)" size={24} />
-            </div>
-            <p style={{ fontWeight: '700', fontSize: '0.75rem', letterSpacing: '0.5px' }}>ADMINISTRATION</p>
-          </div>
-          <div style={{ background: 'white', padding: '25px', borderRadius: '25px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 15px 30px rgba(0,0,0,0.02)' }}>
-            <div style={{ background: '#fff1f2', width: '50px', height: '50px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-              <CreditCard color="var(--ashal-red)" size={24} />
-            </div>
-            <p style={{ fontWeight: '700', fontSize: '0.75rem', letterSpacing: '0.5px' }}>AMENDES</p>
-          </div>
+        {/* BANNIÈRE D'INFORMATION */}
+        <div style={{ marginTop: '25px', padding: '15px', background: '#F1F5F9', borderRadius: '15px', border: '1px solid #E2E8F0' }}>
+            <p style={{ fontSize: '0.7rem', color: '#475569', lineHeight: '1.4' }}>
+                <strong>Note :</strong> Toutes vos demandes sont horodatées et certifiées via le Registre National.
+            </p>
         </div>
       </div>
 
-      {/* Navigation Basse "Dock Style" */}
-      <nav style={{ 
-        position: 'absolute', bottom: '25px', left: '25px', right: '25px',
-        background: 'white', borderRadius: '25px', padding: '15px',
-        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.1)', zIndex: 10
-      }}>
-        <HomeIcon size={24} color="var(--ashal-red)" />
-        <Search size={24} color="#cbd5e1" />
-        <User size={24} color="#cbd5e1" />
-      </nav>
+      {/* BARRE DE NAVIGATION INFÉRIEURE (NAVBAR) */}
+      <div style={{ height: '85px', background: 'white', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-around', alignItems: 'center', zIndex: 10, paddingBottom: '15px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <HomeIcon size={22} color="#E70011" />
+            <span style={{ fontSize: '0.6rem', fontWeight: 'bold', color: '#E70011' }}>Accueil</span>
+        </div>
+        <div onClick={() => navigate('/e-admin')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <FileText size={22} color="#94A3B8" />
+            <span style={{ fontSize: '0.6rem', fontWeight: 'bold', color: '#94A3B8' }}>Dossiers</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <Settings size={22} color="#94A3B8" />
+            <span style={{ fontSize: '0.6rem', fontWeight: 'bold', color: '#94A3B8' }}>Réglages</span>
+        </div>
+      </div>
     </div>
   );
 };
