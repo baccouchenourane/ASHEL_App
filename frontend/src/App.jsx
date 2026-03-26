@@ -4,6 +4,7 @@ import Home from './components/Home';
 import EAmende from './components/EAmende';
 import Login from './components/Login';
 import Register from './components/Register';
+import PaiementAmende from './components/paiementamende';
 
 function App() {
   return (
@@ -12,6 +13,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/e-amende" element={<EAmende />} />
+        <Route path="/e-amende" element={<PaiementAmende />} />
+        <Route path="/register" element={<Register />} />
         {/* Ajoute les autres routes ici plus tard */}
       </Routes>
     </Router>
