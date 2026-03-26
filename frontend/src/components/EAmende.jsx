@@ -1,179 +1,135 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Search, CreditCard, AlertCircle, CheckCircle, 
-  Filter, Download, Eye, Gavel, MapPin, Calendar, 
-  TrendingUp, Clock, ShieldCheck, ChevronRight 
+  ArrowLeft, History, Car, QrCode, ShieldCheck, 
+  Calendar, MapPin, ChevronRight, X 
 } from 'lucide-react';
 
 const EAmende = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('liste'); // liste, dashboard, contestation
-  const [filter, setFilter] = useState('toutes');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
 
-  // Données simulées riches
-  const amendes = [
-    { id: "PV-2026-001", type: "Excès de vitesse", date: "2026-03-15", lieu: "A1, Hammamet", montant: 60, statut: "Non payée", gravite: "Elevée" },
-    { id: "PV-2026-042", type: "Stationnement", date: "2026-02-10", lieu: "Centre ville, Tunis", montant: 20, statut: "Payée", gravite: "Faible" },
-    { id: "PV-2025-112", type: "Feu Rouge", date: "2026-03-20", lieu: "Ennasr, Ariana", montant: 120, statut: "Contestée", gravite: "Critique" },
+  // Données simulées
+  const userCars = [
+    { modele: "Volkswagen Golf 8", matricule: "235 TUN 4567" }
   ];
 
-  const stats = { total: 200, payé: 20, restant: 180, nb: 3 };
+  const amendeEnAttente = {
+    id: "PV-2026-88",
+    type: "Excès de vitesse - Radès",
+    date: "22 Mars 2026",
+    montant: "60.000 DT"
+  };
 
   return (
-    <div className="app-container" style={{ height: 'auto', minHeight: '820px' }}>
-      <div className="moucharabieh-overlay"></div>
+    <div style={{ padding: '20px', backgroundColor: '#f4f7fe', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       
-      {/* 1. Header Premium */}
-      <div style={{ background: 'linear-gradient(135deg, var(--ashal-red) 0%, #99000b 100%)', padding: '30px 20px 50px 20px', color: 'white' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-          <ArrowLeft onClick={() => navigate('/home')} style={{ cursor: 'pointer' }} />
-          <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0 }}>Gestion des Amendes</h2>
+      {/* HEADER FIXE */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <ArrowLeft onClick={() => navigate('/home')} style={{ cursor: 'pointer', color: '#1e293b' }} />
+          <h2 style={{ color: '#1e293b', margin: 0, fontSize: '1.3rem', fontWeight: '900' }}>E-Amende</h2>
         </div>
-        
-        <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-           <StatMiniCard icon={<Clock size={16}/>} label="À régler" value={`${stats.restant} DT`} />
-           <StatMiniCard icon={<CheckCircle size={16}/>} label="Payées" value={`${stats.payé} DT`} />
-           <StatMiniCard icon={<TrendingUp size={16}/>} label="Total" value={`${stats.total} DT`} />
-        </div>
+        <div onClick={() => setShowHistory(true)} style={iconButtonStyle}><History size={20} /></div>
       </div>
 
-      <div style={{ padding: '20px', marginTop: '-30px', zIndex: 5, flex: 1 }}>
-        
-        {/* 2. Barre de recherche et Filtres */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
-            <input 
-              type="text" 
-              placeholder="Rechercher un PV..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '15px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '0.85rem' }} 
-            />
-          </div>
-          <button style={{ padding: '12px', borderRadius: '15px', border: 'none', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-            <Filter size={18} color="var(--ashal-red)" />
-          </button>
-        </div>
-
-        {/* 3. Navigation Interne */}
-        <div style={{ display: 'flex', background: '#f1f5f9', padding: '5px', borderRadius: '15px', marginBottom: '20px' }}>
-          {['liste', 'statistiques'].map((tab) => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{ 
-                flex: 1, padding: '10px', border: 'none', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800',
-                background: activeTab === tab ? 'white' : 'transparent',
-                color: activeTab === tab ? 'var(--ashal-red)' : '#64748b',
-                boxShadow: activeTab === tab ? '0 4px 10px rgba(0,0,0,0.05)' : 'none'
-              }}>
-              {tab.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {/* 4. Liste des Amendes (Cards) */}
-        {activeTab === 'liste' && (
-          <div className="fade-in">
-            {amendes.map((amende) => (
-              <div key={amende.id} style={{ 
-                background: 'white', borderRadius: '25px', padding: '20px', marginBottom: '15px', 
-                boxShadow: '0 10px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' 
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '700' }}>{amende.id}</span>
-                  <StatusBadge status={amende.statut} />
+      {/* 1. PERMIS DIGITAL EN HAUT (Priorité) */}
+      <div style={{ marginBottom: '30px' }}>
+        <h4 style={sectionTitleStyle}>VOTRE PERMIS DIGITAL</h4>
+        <div style={permisCardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: '0.6rem', opacity: 0.7, fontWeight: 'bold' }}>RÉPUBLIQUE TUNISIENNE</p>
+              <h3 style={{ margin: '5px 0 15px 0', fontSize: '1rem', fontWeight: '900' }}>PERMIS DE CONDUIRE</h3>
+              
+              <div style={{ display: 'flex', gap: '20px' }}>
+                <div>
+                  <p style={permisLabel}>TITULAIRE</p>
+                  <p style={permisData}>MOHAMED ALI</p>
                 </div>
-                
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', fontWeight: '800' }}>{amende.type}</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  <InfoRow icon={<Calendar size={14}/>} text={amende.date} />
-                  <InfoRow icon={<MapPin size={14}/>} text={amende.lieu} />
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px', borderTop: '1px solid #f8fafc' }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Montant :</span>
-                    <div style={{ fontWeight: '900', fontSize: '1.2rem', color: amende.statut === 'Payée' ? '#059669' : 'var(--ashal-red)' }}>{amende.montant} DT</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <ActionButton icon={<Eye size={16}/>} color="#f1f5f9" textColor="#1e293b" />
-                    {amende.statut !== 'Payée' && (
-                      <>
-                        <ActionButton icon={<Gavel size={16}/>} color="#fff1f2" textColor="var(--ashal-red)" />
-                        <ActionButton icon={<CreditCard size={16}/>} color="#1e293b" textColor="white" primary />
-                      </>
-                    )}
-                  </div>
+                <div>
+                  <p style={permisLabel}>CATÉGORIE</p>
+                  <p style={permisData}>B</p>
                 </div>
               </div>
-            ))}
+            </div>
+            
+            <div style={{ background: 'white', padding: '8px', borderRadius: '12px', height: 'fit-content' }}>
+              <QrCode size={55} color="#1e293b" />
+            </div>
           </div>
-        )}
-
-        {activeTab === 'statistiques' && (
-          <div className="fade-in" style={{ textAlign: 'center', padding: '40px 0' }}>
-            <TrendingUp size={40} color="var(--ashal-red)" style={{ opacity: 0.2, marginBottom: '15px' }} />
-            <p style={{ fontWeight: '700', color: '#64748b' }}>Analyse des données en cours...</p>
-            <div style={{ height: '150px', background: '#f8fafc', borderRadius: '20px', marginTop: '20px', border: '2px dashed #e2e8f0' }}></div>
+          
+          <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px' }}>
+             <ShieldCheck size={14} color="#10b981" />
+             <span style={{ fontSize: '0.6rem', fontWeight: 'bold', opacity: 0.8 }}>VÉRIFIÉ PAR L'AGENCE NATIONALE DE CERTIFICATION</span>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* 5. Footer Sécurité */}
-      <div style={{ padding: '20px', textAlign: 'center', background: '#f8fafc' }}>
-         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: 0.5 }}>
-            <ShieldCheck size={16} />
-            <span style={{ fontSize: '0.65rem', fontWeight: '700' }}>SYSTEME SECURISE MONETIQUE TUNISIE</span>
-         </div>
+      {/* 2. MES VÉHICULES */}
+      <div style={{ marginBottom: '30px' }}>
+        <h4 style={sectionTitleStyle}>MES VÉHICULES</h4>
+        {userCars.map((car, idx) => (
+          <div key={idx} style={cardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ background: '#eff6ff', padding: '10px', borderRadius: '12px', color: '#0056D2' }}>
+                <Car size={22} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800' }}>{car.modele}</h3>
+                <span style={plateStyle}>{car.matricule}</span>
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#059669', fontWeight: 'bold' }}>ASSURÉ</div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {/* 3. MES AMENDES */}
+      <div style={{ marginBottom: '30px' }}>
+        <h4 style={sectionTitleStyle}>INFRACTIONS EN COURS</h4>
+        <div style={{ ...cardStyle, borderLeft: '5px solid #e11d48' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '800' }}>{amendeEnAttente.type}</span>
+            <span style={{ fontSize: '1rem', fontWeight: '900', color: '#e11d48' }}>{amendeEnAttente.montant}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', color: '#64748b', fontSize: '0.75rem' }}>
+            <Calendar size={14} /> {amendeEnAttente.date}
+          </div>
+          <button onClick={() => navigate('/paiement-amende')} style={payButtonStyle}>
+            RÉGLER L'AMENDE <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* MODAL HISTORIQUE (SIMPLE) */}
+      {showHistory && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'white', width: '100%', maxWidth: '350px', borderRadius: '25px', padding: '25px', textAlign: 'center' }}>
+            <History size={40} color="#0056D2" style={{ marginBottom: '15px', opacity: 0.2 }} />
+            <h3 style={{ margin: '0 0 10px 0' }}>Historique</h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '20px' }}>Aucun historique de paiement pour le moment.</p>
+            <button onClick={() => setShowHistory(false)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold' }}>Fermer</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-// --- Composants Internes ---
-const StatMiniCard = ({ icon, label, value }) => (
-  <div style={{ background: 'rgba(255,255,255,0.15)', padding: '12px 20px', borderRadius: '18px', minWidth: '110px', backdropFilter: 'blur(10px)' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px', opacity: 0.8 }}>
-      {icon} <span style={{ fontSize: '0.6rem', fontWeight: '700', textTransform: 'uppercase' }}>{label}</span>
-    </div>
-    <div style={{ fontSize: '1rem', fontWeight: '800' }}>{value}</div>
-  </div>
-);
+// --- STYLES RÉUTILISABLES ---
+const sectionTitleStyle = { fontSize: '0.7rem', fontWeight: '900', color: '#64748b', letterSpacing: '1px', marginBottom: '12px', textTransform: 'uppercase' };
+const cardStyle = { background: 'white', padding: '18px', borderRadius: '22px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', marginBottom: '12px' };
+const plateStyle = { background: '#1e293b', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '1px', display: 'inline-block', marginTop: '5px' };
+const payButtonStyle = { width: '100%', padding: '14px', background: '#0056D2', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer' };
+const iconButtonStyle = { background: 'white', padding: '10px', borderRadius: '14px', color: '#1e293b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)', cursor: 'pointer' };
 
-const StatusBadge = ({ status }) => {
-  const colors = {
-    "Payée": { bg: "#ecfdf5", text: "#059669" },
-    "Non payée": { bg: "#fff1f2", text: "#e11d48" },
-    "Contestée": { bg: "#fefce8", text: "#a16207" }
-  };
-  const style = colors[status] || colors["Non payée"];
-  return (
-    <span style={{ padding: '5px 12px', borderRadius: '20px', background: style.bg, color: style.text, fontSize: '0.65rem', fontWeight: '800' }}>
-      {status.toUpperCase()}
-    </span>
-  );
+const permisCardStyle = {
+  background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+  padding: '22px', borderRadius: '25px', color: 'white', position: 'relative', overflow: 'hidden',
+  boxShadow: '0 15px 30px rgba(30, 41, 59, 0.2)'
 };
-
-const InfoRow = ({ icon, text }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '0.8rem' }}>
-    <span style={{ color: '#cbd5e1' }}>{icon}</span>
-    <span style={{ fontWeight: '600' }}>{text}</span>
-  </div>
-);
-
-const ActionButton = ({ icon, color, textColor, primary = false }) => (
-  <button style={{ 
-    width: '42px', height: '42px', borderRadius: '12px', border: 'none', background: color, color: textColor,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-    boxShadow: primary ? '0 10px 15px rgba(0,0,0,0.15)' : 'none'
-  }}>
-    {icon}
-  </button>
-);
+const permisLabel = { margin: 0, fontSize: '0.55rem', opacity: 0.6, fontWeight: 'bold' };
+const permisData = { margin: '2px 0 0 0', fontSize: '0.8rem', fontWeight: '800' };
 
 export default EAmende;

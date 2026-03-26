@@ -9,17 +9,29 @@ import {
 const Home = () => {
   const navigate = useNavigate();
 
+  // --- RÉCUPÉRATION DES DONNÉES UTILISATEUR ---
+  // On récupère les infos stockées lors du Login/Register
+  const userData = JSON.parse(localStorage.getItem('user_ashel')) || { 
+    nom: "Citoyen Tunisien", 
+    cin: "00000000" 
+  };
+
+  // Formatage du CIN pour l'affichage (ex: 098****43)
+  const formatCIN = (cin) => {
+    if (cin.length < 8) return cin;
+    return `${cin.substring(0, 3)}****${cin.substring(7, 8)}`;
+  };
+
   return (
     <div className="app-container" style={{ backgroundColor: '#f8fafc', minHeight: '100vh', position: 'relative', fontFamily: 'sans-serif' }}>
       
-      {/* 1. Header avec Fond Technologique/Circuit */}
+      {/* 1. Header avec Fond Bleu Institutionnel */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', // Vert comme l'image
+        background: 'linear-gradient(135deg, #0056D2 0%, #003FA3 100%)', 
         height: '240px', padding: '40px 25px', color: 'white',
         borderBottomLeftRadius: '40px', borderBottomRightRadius: '40px',
         position: 'relative', overflow: 'hidden'
       }}>
-        {/* Motif discret (Optionnel: simuler le moucharabieh ou circuit) */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1, pointerEvents: 'none' }}>
            <LayoutGrid size={300} style={{ position: 'absolute', right: -50, top: -50 }} />
         </div>
@@ -30,8 +42,10 @@ const Home = () => {
                 <User size={28} />
              </div>
              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0 }}>Mohamed Ali</h3>
-                <p style={{ fontSize: '0.8rem', opacity: 0.9, margin: 0 }}>ID No.: 098****43</p>
+                {/* NOM DYNAMIQUE ICI */}
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0 }}>{userData.nom}</h3>
+                {/* CIN DYNAMIQUE ICI */}
+                <p style={{ fontSize: '0.8rem', opacity: 0.9, margin: 0 }}>ID No.: {formatCIN(userData.cin)}</p>
              </div>
           </div>
           <div style={{ display: 'flex', gap: '15px' }}>
@@ -40,61 +54,61 @@ const Home = () => {
           </div>
         </div>
 
-        {/* 2. Carte CIN Flottante (Style Image) */}
+        {/* 2. Carte CIN Flottante */}
         <div style={{ 
           background: 'white', borderRadius: '25px', padding: '20px', marginTop: '30px',
           boxShadow: '0 15px 35px rgba(0,0,0,0.1)', color: '#1e293b',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div style={{ color: '#10b981' }}><QrCode size={35} /></div>
+            <div style={{ color: '#0056D2' }}><QrCode size={35} /></div>
             <div>
               <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0, fontWeight: '700' }}>VOTRE IDENTITÉ DIGITALE</p>
-              <p style={{ fontSize: '0.95rem', fontWeight: '800', margin: 0 }}>ACTIF / VÉRIFIÉ</p>
+              <p style={{ fontSize: '0.95rem', fontWeight: '800', margin: 0, color: '#003FA3' }}>ACTIF / VÉRIFIÉ</p>
             </div>
           </div>
           <ChevronRight color="#cbd5e1" />
         </div>
       </div>
 
-      {/* 3. Section: Documents (Horizontal Scroll) */}
+      {/* 3. Section: Documents */}
       <div style={{ padding: '30px 20px 0 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
           <h4 style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b' }}>Mes Documents</h4>
-          <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: '700' }}>Voir tout</span>
+          <span style={{ fontSize: '0.8rem', color: '#0056D2', fontWeight: '700' }}>Voir tout</span>
         </div>
         
         <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-          <DocumentCard icon={<CreditCard size={22}/>} title="CIN" color="#ecfdf5" textColor="#059669" />
-          <DocumentCard icon={<PassportIcon size={22}/>} title="Passeport" color="#eef2ff" textColor="#4f46e5" />
-          <DocumentCard icon={<Car size={22}/>} title="Permis" color="#fff7ed" textColor="#d97706" />
+          <DocumentCard icon={<CreditCard size={22}/>} title="CIN" color="#EEF2FF" textColor="#0056D2" />
+          <DocumentCard icon={<PassportIcon size={22}/>} title="Passeport" color="#E0F2FE" textColor="#0369A1" />
+          <DocumentCard icon={<Car size={22}/>} title="Permis" color="#FFF7ED" textColor="#EA580C" />
         </div>
       </div>
 
-      {/* 4. Section: Notifications (Service Alerts) */}
+      {/* 4. Section: Notifications */}
       <div style={{ padding: '20px' }}>
         <h4 style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b', marginBottom: '15px' }}>Notifications de services</h4>
         <div style={{ background: 'white', borderRadius: '25px', padding: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-          {/* Alerte Amende qui redirige vers E-Amende */}
+          
           <div 
             onClick={() => navigate('/e-amende')} 
             style={{ display: 'flex', gap: '15px', alignItems: 'center', cursor: 'pointer' }}
           >
-            <div style={{ padding: '12px', background: '#fff1f2', borderRadius: '15px' }}>
-              <CreditCard size={20} color="#e11d48" />
+            <div style={{ padding: '12px', background: '#FEF2F2', borderRadius: '15px' }}>
+              <CreditCard size={20} color="#E70011" />
             </div>
             <div style={{ flex: 1 }}>
               <h5 style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800' }}>E-Amende</h5>
-              <p style={{ margin: 0, fontSize: '0.75rem', color: '#ef4444' }}>Vous avez 1 amende en attente (60 DT)</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#E70011' }}>Vous avez 1 amende en attente (60 DT)</p>
             </div>
             <ChevronRight size={18} color="#cbd5e1" />
           </div>
           
           <hr style={{ border: 'none', borderTop: '1px solid #f1f5f9', margin: '15px 0' }} />
           
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div style={{ padding: '12px', background: '#eff6ff', borderRadius: '15px' }}>
-              <FileText size={20} color="#3b82f6" />
+          <div onClick={() => navigate('/e-admin')} style={{ display: 'flex', gap: '15px', alignItems: 'center', cursor: 'pointer' }}>
+            <div style={{ padding: '12px', background: '#EEF2FF', borderRadius: '15px' }}>
+              <FileText size={20} color="#0056D2" />
             </div>
             <div style={{ flex: 1 }}>
               <h5 style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800' }}>E-Administration</h5>
@@ -105,7 +119,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 5. Navigation Tab Bar (Fixe en bas) */}
+      {/* 5. Navigation Tab Bar */}
       <nav style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, height: '85px',
         background: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center',
@@ -113,17 +127,16 @@ const Home = () => {
         boxShadow: '0 -10px 25px rgba(0,0,0,0.03)'
       }}>
         <NavItem icon={<LayoutGrid size={24} />} label="Accueil" active />
-        <NavItem icon={<FileText size={24} />} label="E-Admin" onClick={() => navigate('/e-administration')} />
+        <NavItem icon={<FileText size={24} />} label="E-Admin" onClick={() => navigate('/e-admin')} />
         <NavItem icon={<CreditCard size={24} />} label="Amendes" onClick={() => navigate('/e-amende')} />
-        <NavItem icon={<Users size={24} />} label="Participation" onClick={() => navigate('/e-participation')} />
+        <NavItem icon={<Users size={24} />} label="Participation" />
         <NavItem icon={<User size={24} />} label="Profil" onClick={() => navigate('/profil')} />
       </nav>
     </div>
   );
 };
 
-// --- Sous-composants pour la lisibilité ---
-
+// --- Sous-composants ---
 const DocumentCard = ({ icon, title, color, textColor }) => (
   <div style={{ 
     minWidth: '130px', background: color, padding: '20px', borderRadius: '25px',
@@ -139,8 +152,8 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     onClick={onClick}
     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer', flex: 1 }}
   >
-    <div style={{ color: active ? '#059669' : '#94a3b8', transition: '0.3s' }}>{icon}</div>
-    <span style={{ fontSize: '0.6rem', fontWeight: '700', color: active ? '#059669' : '#94a3b8' }}>
+    <div style={{ color: active ? '#0056D2' : '#94a3b8' }}>{icon}</div>
+    <span style={{ fontSize: '0.6rem', fontWeight: '700', color: active ? '#0056D2' : '#94a3b8' }}>
       {label}
     </span>
   </div>

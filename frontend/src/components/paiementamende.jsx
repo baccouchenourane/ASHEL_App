@@ -1,145 +1,165 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, CreditCard, ShieldCheck, CheckCircle, 
-  Download, Mail, Smartphone, Lock, ChevronRight 
+  ArrowLeft, ShieldCheck, Lock, CreditCard, 
+  CheckCircle2, AlertCircle, ChevronRight, Loader2 
 } from 'lucide-react';
 
 const PaiementAmende = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: Résumé, 2: Paiement, 3: Confirmation
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
 
-  const handleNext = () => {
+  // Simulation d'une validation de carte
+  const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
-      setStep(step + 1);
       setLoading(false);
-    }, 1500);
+      setSuccess(true);
+    }, 2500); // Temps de simulation banque
   };
 
+  if (success) {
+    return <SuccessView navigate={navigate} />;
+  }
+
   return (
-    <div className="app-container" style={{ height: 'auto', minHeight: '820px' }}>
-      <div className="moucharabieh-overlay"></div>
-
-      {/* 1. Barre de Progression (UX Moderne) */}
-      <div style={{ padding: '40px 25px 20px 25px', background: 'white' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-          <ArrowLeft onClick={() => navigate('/e-amende')} style={{ cursor: 'pointer' }} />
-          <h2 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0 }}>Règlement sécurisé</h2>
+    <div style={{ backgroundColor: '#f4f7fe', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      
+      {/* Header Sécurisé */}
+      <div style={{ padding: '25px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', borderBottom: '1px solid #e2e8f0' }}>
+        <ArrowLeft onClick={() => navigate('/e-amende')} style={{ cursor: 'pointer' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ShieldCheck size={18} color="#059669" />
+          <span style={{ fontSize: '0.8rem', fontWeight: '800', color: '#1e293b' }}>PAIEMENT SÉCURISÉ</span>
         </div>
+        <div style={{ width: '24px' }}></div>
+      </div>
+
+      <div style={{ padding: '20px' }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginBottom: '20px' }}>
-          <div style={{ position: 'absolute', top: '15px', left: '10%', right: '10%', height: '2px', background: '#f1f5f9', zIndex: 1 }}></div>
-          <div style={{ position: 'absolute', top: '15px', left: '10%', width: step === 1 ? '0%' : step === 2 ? '40%' : '80%', height: '2px', background: 'var(--ashal-red)', zIndex: 2, transition: '0.5s' }}></div>
-          
-          <StepIcon active={step >= 1} icon={<Lock size={14}/>} label="Détails" />
-          <StepIcon active={step >= 2} icon={<CreditCard size={14}/>} label="Paiement" />
-          <StepIcon active={step >= 3} icon={<CheckCircle size={14}/>} label="Succès" />
+        {/* Résumé du Montant */}
+        <div style={{ textAlign: 'center', margin: '30px 0' }}>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '5px' }}>Montant total à régler</p>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#1e293b', margin: 0 }}>
+            60.000 <span style={{ fontSize: '1rem' }}>DT</span>
+          </h1>
+        </div>
+
+        {/* La Carte Bancaire Visuelle */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+          borderRadius: '20px', padding: '25px', color: 'white', 
+          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', marginBottom: '30px',
+          position: 'relative', overflow: 'hidden'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+            <div style={{ width: '45px', height: '35px', background: '#fbbf24', borderRadius: '5px', opacity: 0.8 }}></div>
+            <CreditCard size={30} opacity={0.5} />
+          </div>
+          <p style={{ fontSize: '1.2rem', letterSpacing: '4px', marginBottom: '20px' }}>
+            {cardNumber ? cardNumber.padEnd(16, '•').replace(/(.{4})/g, '$1 ') : '•••• •••• •••• ••••'}
+          </p>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '0.7rem', opacity: 0.7 }}>
+            <div>EXP: 09/28</div>
+            <div>CVV: •••</div>
+          </div>
+        </div>
+
+        {/* Formulaire de saisie */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div className="input-group">
+            <label style={labelStyle}>Numéro de carte</label>
+            <input 
+              type="text" 
+              maxLength="16"
+              placeholder="4000 1234 5678 9012" 
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              style={inputStyle} 
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Expiration</label>
+              <input type="text" placeholder="MM/YY" style={inputStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Code CVV</label>
+              <input type="password" placeholder="123" style={inputStyle} />
+            </div>
+          </div>
+
+          <button 
+            onClick={handlePay}
+            disabled={loading}
+            style={{ 
+              marginTop: '20px', backgroundColor: '#0056D2', color: 'white', 
+              border: 'none', borderRadius: '15px', padding: '18px', 
+              fontWeight: '800', fontSize: '1rem', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+              boxShadow: '0 10px 15px -3px rgba(0, 86, 210, 0.3)'
+            }}
+          >
+            {loading ? <div className="spinner"></div> : <><Lock size={18} /> CONFIRMER LE PAIEMENT</>}
+          </button>
+        </div>
+
+        {/* Logos Partenaires */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px', opacity: 0.4, grayscale: '1' }}>
+           <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" width="40" />
+           <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MC" width="30" />
+           <div style={{ fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>MONÉTIQUE TUNISIE</div>
         </div>
       </div>
 
-      <div style={{ padding: '20px', flex: 1 }}>
-        
-        {/* ÉTAPE 1 : RÉSUMÉ AVANT PAIEMENT */}
-        {step === 1 && (
-          <div className="fade-in">
-            <div style={{ background: 'white', borderRadius: '25px', padding: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
-              <h4 style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: '#64748b' }}>RÉSUMÉ DE L'INFRACTION</h4>
-              <DetailRow label="ID Amende" value="PV-2026-001" />
-              <DetailRow label="Type" value="Excès de vitesse" />
-              <DetailRow label="Date" value="15 Mars 2026" />
-              <hr style={{ border: 'none', borderTop: '1px dashed #e2e8f0', margin: '20px 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: '700' }}>Total à payer</span>
-                <span style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--ashal-red)' }}>60.000 DT</span>
-              </div>
-            </div>
-            <button onClick={handleNext} className="btn-ashal" style={{ width: '100%', marginTop: '30px' }}>
-              CONTINUER VERS LE PAIEMENT
-            </button>
-          </div>
-        )}
-
-        {/* ÉTAPE 2 : FORMULAIRE DE PAIEMENT */}
-        {step === 2 && (
-          <div className="fade-in">
-            <h4 style={{ fontWeight: '800', marginBottom: '20px' }}>Mode de paiement</h4>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-               <PaymentOption icon={<CreditCard size={20}/>} label="Carte" active />
-               <PaymentOption icon={<Smartphone size={20}/>} label="e-Dinar" />
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '25px', padding: '25px' }}>
-              <input type="text" placeholder="Nom sur la carte" className="login-input" style={{ marginBottom: '15px' }} />
-              <input type="text" placeholder="0000 0000 0000 0000" className="login-input" style={{ marginBottom: '15px' }} />
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <input type="text" placeholder="MM/YY" className="login-input" />
-                <input type="password" placeholder="CVV" className="login-input" />
-              </div>
-            </div>
-
-            <button onClick={handleNext} className="btn-ashal" style={{ width: '100%', marginTop: '30px' }}>
-              {loading ? "TRAITEMENT SECURISE..." : "CONFIRMER LE PAIEMENT"}
-            </button>
-          </div>
-        )}
-
-        {/* ÉTAPE 3 : CONFIRMATION SUCCÈS */}
-        {step === 3 && (
-          <div className="fade-in" style={{ textAlign: 'center', padding: '40px 10px' }}>
-            <div style={{ width: '80px', height: '80px', background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-              <CheckCircle size={40} color="#059669" />
-            </div>
-            <h2 style={{ fontWeight: '900', marginBottom: '10px' }}>Paiement Réussi !</h2>
-            <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '40px' }}>Votre amende a été régularisée avec succès. Un reçu vous a été envoyé par email.</p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <button className="btn-ashal" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                <Download size={18} /> TÉLÉCHARGER LE REÇU (PDF)
-              </button>
-              <button onClick={() => navigate('/home')} style={{ background: 'transparent', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}>
-                Retour à l'accueil
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <style>{`
+        .spinner {
+          width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+          border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };
 
-// --- Sous-composants ---
-const StepIcon = ({ active, icon, label }) => (
-  <div style={{ zIndex: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-    <div style={{ 
-      width: '32px', height: '32px', borderRadius: '50%', 
-      background: active ? 'var(--ashal-red)' : 'white', 
-      color: active ? 'white' : '#cbd5e1',
-      border: `2px solid ${active ? 'var(--ashal-red)' : '#f1f5f9'}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s'
-    }}>
-      {icon}
+// --- Vue de Succès ---
+const SuccessView = ({ navigate }) => (
+  <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', textAlign: 'center', backgroundColor: 'white' }}>
+    <div style={{ width: '100px', height: '100px', background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '30px', animation: 'scaleUp 0.5s ease-out' }}>
+      <CheckCircle2 size={50} color="#059669" />
     </div>
-    <span style={{ fontSize: '0.65rem', fontWeight: '800', color: active ? '#1e293b' : '#cbd5e1' }}>{label}</span>
+    <h1 style={{ fontWeight: '900', color: '#1e293b' }}>Paiement Terminé !</h1>
+    <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '40px' }}>
+      Votre transaction a été approuvée. Votre reçu de paiement a été enregistré dans votre profil.
+    </p>
+    <button 
+      onClick={() => navigate('/home')}
+      style={{ width: '100%', maxWidth: '300px', padding: '18px', background: '#1e293b', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}
+    >
+      RETOUR À L'ACCUEIL
+    </button>
+
+    <style>{`
+      @keyframes scaleUp {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    `}</style>
   </div>
 );
 
-const DetailRow = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.85rem' }}>
-    <span style={{ color: '#94a3b8', fontWeight: '600' }}>{label}</span>
-    <span style={{ color: '#1e293b', fontWeight: '800' }}>{value}</span>
-  </div>
-);
+// Styles réutilisables
+const inputStyle = {
+  width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', 
+  fontSize: '1rem', outline: 'none', background: 'white', boxSizing: 'border-box'
+};
 
-const PaymentOption = ({ icon, label, active = false }) => (
-  <div style={{ 
-    flex: 1, padding: '15px', borderRadius: '20px', border: `2px solid ${active ? 'var(--ashal-red)' : '#f1f5f9'}`,
-    background: active ? 'white' : '#f8fafc', textAlign: 'center', cursor: 'pointer'
-  }}>
-    <div style={{ color: active ? 'var(--ashal-red)' : '#94a3b8', marginBottom: '5px', display: 'flex', justifyContent: 'center' }}>{icon}</div>
-    <span style={{ fontSize: '0.75rem', fontWeight: '800', color: active ? '#1e293b' : '#94a3b8' }}>{label}</span>
-  </div>
-);
+const labelStyle = {
+  fontSize: '0.75rem', fontWeight: '800', color: '#64748b', marginBottom: '8px', display: 'block', marginLeft: '5px'
+};
 
 export default PaiementAmende;
