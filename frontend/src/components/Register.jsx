@@ -1,83 +1,81 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, CreditCard, Phone, Mail, Lock, Smartphone, ShieldCheck, ScanFace } from 'lucide-react';
+import { Mail, KeyRound, Loader2 } from 'lucide-react';
 import logoAshel from '../assets/logo_ashel.png';
 
-const Register = () => {
+const Login = () => {
   const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const navigate = useNavigate();
 
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
+  const faceIdIllustration = "https://img.freepik.com/vecteurs-premium/concept-reconnaissance-faciale-pour-authentification-biometrique_199064-1100.jpg?w=826";
+
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    setStep(2);
+  };
+
+  const handleBiometricScan = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      navigate('/home');
+    }, 2000);
+  };
 
   return (
     <div className="auth-container dark-theme">
-      <div className="auth-card central-content">
-        
-        {/* En-tête avec Logo constant */}
-        <div className="logo-container">
-          <img src={logoAshel} alt="ASHEL Logo" className="main-logo-img" />
-          <p className="step-indicator">Étape {step} sur 4</p>
+      {step === 1 && (
+        <div className="auth-card central-content">
+          <div className="logo-container">
+            <img src={logoAshel} alt="ASHEL Logo" className="main-logo-img" />
+            <p className="app-slogan">SERVICES QUOTIDIENS. SIMPLIFIÉS.</p>
+          </div>
+          <h2 className="title-text">Identifiez-vous</h2>
+          <p className="subtitle-text">Accédez en toute sécurité à vos services numériques gouvernementaux.</p>
+          <form onSubmit={handleNextStep}>
+            <div className="input-with-icon">
+              <Mail className="input-icon" size={20} />
+              <input type="text" placeholder="Email ou Numéro CIN" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+            <div className="input-with-icon">
+              <KeyRound className="input-icon" size={20} />
+              <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+            <div className="options-row" style={{ textAlign: 'right', marginBottom: '20px' }}>
+              <span className="forgot-pass">Mot de passe oublié ?</span>
+            </div>
+            <button type="submit" className="btn-primary-ashel">Suivant</button>
+            <button type="button" className="btn-secondary-ashel" onClick={() => navigate('/register')}>Nouvel utilisateur ? S'inscrire</button>
+          </form>
         </div>
-
-        {/* ÉTAPE 1 : INFORMATIONS PERSONNELLES */}
-        {step === 1 && (
-          <div className="form-step">
-            <h2 className="title-text">Créer un compte</h2>
-            <p className="subtitle-text">Entrez vos informations telles qu'elles apparaissent sur votre document d'identité.</p>
-            <div className="input-with-icon"><User size={20}/><input type="text" placeholder="Nom" /></div>
-            <div className="input-with-icon"><User size={20}/><input type="text" placeholder="Prénom" /></div>
-            <div className="input-with-icon"><CreditCard size={20}/><input type="text" placeholder="Numéro CIN ou Passeport" /></div>
-            <button className="btn-primary-ashel" onClick={nextStep}>Continuer</button>
-            <button className="btn-back-ashel" onClick={() => navigate('/')}>Déjà inscrit ? Se connecter</button>
-          </div>
-        )}
-
-        {/* ÉTAPE 2 : CONTACT ET SÉCURITÉ */}
-        {step === 2 && (
-          <div className="form-step">
-            <h2 className="title-text">Contact</h2>
-            <p className="subtitle-text">Ces informations seront utilisées pour la vérification de votre compte.</p>
-            <div className="input-with-icon"><Phone size={20}/><input type="tel" placeholder="Numéro de téléphone" /></div>
-            <div className="input-with-icon"><Mail size={20}/><input type="email" placeholder="Adresse Email" /></div>
-            <div className="input-with-icon"><Lock size={20}/><input type="password" placeholder="Créer un mot de passe" /></div>
-            <button className="btn-primary-ashel" onClick={nextStep}>Suivant</button>
-            <button className="btn-back-ashel" onClick={prevStep}>Retour</button>
-          </div>
-        )}
-
-        {/* ÉTAPE 3 : BIOMÉTRIE (Première fois) */}
-        {step === 3 && (
-          <div className="form-step">
-            <h2 className="title-text">Identité Digitale</h2>
-            <p className="subtitle-text">Enregistrez votre empreinte faciale pour sécuriser vos futurs accès.</p>
-            <div className="biometric-box">
-              <ScanFace size={80} className="pulse-animation" color="#0A9B8D" />
+      )}
+      {step === 2 && (
+        <div className="auth-card central-content">
+          <div className="biometric-icon-container">
+            <div className={`scan-wrapper ${isScanning ? 'is-scanning' : ''}`}>
+              <img src={faceIdIllustration} alt="Face ID" className={`bio-illustration ${isScanning ? 'pulse-animation' : ''}`} />
             </div>
-            <button className="btn-primary-ashel" onClick={nextStep}>Enregistrer mon visage</button>
-            <button className="btn-back-ashel" onClick={prevStep}>Retour</button>
           </div>
-        )}
-
-        {/* ÉTAPE 4 : VÉRIFICATION SMS */}
-        {step === 4 && (
-          <div className="form-step">
-            <h2 className="title-text">Vérification</h2>
-            <p className="subtitle-text">Un code de confirmation a été envoyé sur votre téléphone.</p>
-            <div className="otp-container">
-              <input type="text" maxLength="1" className="otp-input" />
-              <input type="text" maxLength="1" className="otp-input" />
-              <input type="text" maxLength="1" className="otp-input" />
-              <input type="text" maxLength="1" className="otp-input" />
-            </div>
-            <button className="btn-primary-ashel" onClick={() => navigate('/')}>Finaliser l'inscription</button>
-            <p className="resend-text">Vous n'avez pas reçu le code ? <span>Renvoyer</span></p>
-          </div>
-        )}
-
-      </div>
+          <h2 className="title-text">{isScanning ? "Analyse en cours..." : "Vérification d'identité"}</h2>
+          <p className="subtitle-text">{isScanning ? "Veuillez ne pas bouger pendant le traitement." : "Placez votre visage dans le cadre de la caméra pour finaliser la connexion."}</p>
+          {!isScanning && (
+            <>
+              <div className="guidelines-list">
+                <p>✓ Éclairage suffisant</p>
+                <p>✓ Visage bien visible</p>
+              </div>
+              <button type="button" className="btn-primary-ashel" onClick={handleBiometricScan}>Démarrer le scan</button>
+              <button type="button" className="btn-back-ashel" onClick={() => setStep(1)}>Retour</button>
+            </>
+          )}
+          {isScanning && <Loader2 className="animate-spin" size={32} color="var(--ashel-green)" />}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Register;
+export default Login;
