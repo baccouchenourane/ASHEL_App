@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './components/Home';
+import Home from './components/Home'; 
+import EAmende from './components/EAmende';
 import Login from './components/Login';
 import Register from './components/Register';
-import './App.css';
 
 function App() {
   return (
@@ -11,7 +11,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/e-amende" element={<EAmende />} />
+        {/* Ajoute les autres routes ici plus tard */}
       </Routes>
     </Router>
   );
