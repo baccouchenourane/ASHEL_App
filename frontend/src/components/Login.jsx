@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Fingerprint, AlertCircle, Check } from 'lucide-react';
-import '../App.css'; 
+import '../App.css';
 import logoAshel from '../assets/logo_ashel.png';
+import { loginRequest } from '../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,37 +11,50 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // --- ÉTATS POUR LE SMS ---
+
+  // États pour la bulle SMS simulée
   const [showSMS, setShowSMS] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (cin.length !== 8) {
-      setError("Le CIN doit comporter 8 chiffres.");
+      setError('Le CIN doit comporter 8 chiffres.');
+      return;
+    }
+    if (!password) {
+      setError('Veuillez saisir votre mot de passe.');
       return;
     }
 
     setLoading(true);
 
-    // 1. On génère le code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    localStorage.setItem('temp_otp', code);
+    try {
+      // Appel réel au backend Spring Boot
+      const data = await loginRequest(cin, password);
 
-    // 2. Simulation de vérification réseau
-    setTimeout(() => {
+      // Le backend retourne l'OTP (simulation - en prod il l'envoie par SMS)
+      const otp = data.otp;
+      setGeneratedCode(otp);
+
+      // Stocker le CIN pour l'étape OTP suivante
+      localStorage.setItem('temp_otp', otp);
+      localStorage.setItem('pending_cin', cin);
+
+      setShowSMS(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-      setShowSMS(true); // On affiche le SMS et on attend l'utilisateur
-    }, 1500);
+    }
   };
 
   return (
     <div className="app-container">
-      {/* --- LE SMS QUI RESTE AFFICHÉ JUSQU'AU CLIC --- */}
+
+      {/* Bulle SMS simulée */}
       {showSMS && (
         <div style={{
           position: 'absolute', top: '15px', left: '15px', right: '15px',
@@ -54,15 +68,15 @@ const Login = () => {
                 Messages • À l'instant
               </p>
               <p style={{ margin: '8px 0', fontSize: '0.85rem', color: '#1A1D23', lineHeight: '1.4' }}>
-                ASHAL : Votre code de sécurité est <strong style={{ fontSize: '1.1rem', color: '#E70011' }}>{generatedCode}</strong>.
+                ASHAL : Votre code de sécurité est{' '}
+                <strong style={{ fontSize: '1.1rem', color: '#E70011' }}>{generatedCode}</strong>.
               </p>
             </div>
-            {/* BOUTON POUR VALIDER ET PASSER À LA SUITE */}
-            <button 
+            <button
               onClick={() => navigate('/verify-otp')}
               style={{
-                background: '#E70011', border: 'none', color: 'white', 
-                padding: '8px 12px', borderRadius: '10px', fontSize: '0.7rem', 
+                background: '#E70011', border: 'none', color: 'white',
+                padding: '8px 12px', borderRadius: '10px', fontSize: '0.7rem',
                 fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
               }}
             >
@@ -73,9 +87,9 @@ const Login = () => {
       )}
 
       <div className="moucharabieh-overlay"></div>
-      
+
       <div style={{ padding: '40px 25px', flex: 1, display: 'flex', flexDirection: 'column', zIndex: 2, position: 'relative' }}>
-        
+
         <div style={{ textAlign: 'center', marginBottom: '30px' }} className="fade-in">
           <img src={logoAshel} alt="Logo" style={{ height: '75px', marginBottom: '10px' }} />
           <h1 style={{ fontSize: '1.8rem', fontWeight: '900' }}>ASHAL <span style={{ color: '#E70011' }}>App</span></h1>
@@ -89,30 +103,51 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleLogin} className="fade-in">
-          {error && <div style={{ color: '#B91C1C', fontSize: '0.8rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}><AlertCircle size={14} /> {error}</div>}
-          
+          {error && (
+            <div style={{ color: '#B91C1C', fontSize: '0.8rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <AlertCircle size={14} /> {error}
+            </div>
+          )}
+
           <div className="input-group">
-            <input type="text" placeholder="Numéro CIN (8 chiffres)" className="ashal-input" value={cin} onChange={(e) => setCin(e.target.value.replace(/\D/g, '').slice(0, 8))} required />
+            <input
+              type="text"
+              placeholder="Numéro CIN (8 chiffres)"
+              className="ashal-input"
+              value={cin}
+              onChange={(e) => setCin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              required
+            />
             <Mail size={18} className="input-icon" />
           </div>
-          
+
           <div className="input-group">
-            <input type="password" placeholder="Mot de passe" className="ashal-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              placeholder="Mot de passe"
+              className="ashal-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
             <Lock size={18} className="input-icon" />
           </div>
-          
+
           <button type="submit" className="btn-ashal-primary" disabled={loading || showSMS}>
-            {loading ? "VÉRIFICATION..." : "S'IDENTIFIER"}
+            {loading ? 'VÉRIFICATION...' : "S'IDENTIFIER"}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem' }}>
-          Pas encore de compte ? <span onClick={() => navigate('/register')} style={{ color: '#0056D2', fontWeight: 'bold', cursor: 'pointer' }}>S'inscrire</span>
+          Pas encore de compte ?{' '}
+          <span onClick={() => navigate('/register')} style={{ color: '#0056D2', fontWeight: 'bold', cursor: 'pointer' }}>
+            S'inscrire
+          </span>
         </p>
 
         <div style={{ marginTop: 'auto', textAlign: 'center', paddingBottom: '10px' }}>
-            <Fingerprint size={45} color="#1A1D23" style={{ opacity: 0.15, marginBottom: '5px' }} />
-            <p style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: '700' }}>SÉCURISÉ PAR L'ANCE</p>
+          <Fingerprint size={45} color="#1A1D23" style={{ opacity: 0.15, marginBottom: '5px' }} />
+          <p style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: '700' }}>SÉCURISÉ PAR L'ANCE</p>
         </div>
       </div>
     </div>
