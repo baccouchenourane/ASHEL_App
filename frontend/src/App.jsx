@@ -4,7 +4,7 @@ import Home from './components/Home';
 import EAmende from './components/EAmende';
 import Login from './components/Login';
 import Register from './components/Register';
-import PaiementAmende from './components/paiementamende';
+import PaiementAmende from './components/PaiementAmende'; 
 import VerifyOTP from './components/verifyotp';
 
 function App() {
@@ -17,7 +17,6 @@ function App() {
         <Route path="/paiement-amende" element={<PaiementAmende />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
-        {/* Ajoute les autres routes ici plus tard */}
       </Routes>
     </Router>
   );
