@@ -44,18 +44,31 @@ const VerifyOTP = () => {
       setLoading(false);
     }
   };
-
-  const handleResend = async () => {
+const handleResend = async () => {
     const cin = localStorage.getItem('pending_cin');
-    // On ne peut pas renvoyer sans le mot de passe - on redirige vers login
-    // Alternative : stocker temporairement le password (non recommandé en prod)
-    // Ici on génère juste un nouveau code localement (simulation)
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(newCode);
-    localStorage.setItem('temp_otp', newCode);
-    setShowSMS(true);
-  };
+    const password = localStorage.getItem('temp_pwd');
 
+    if (!cin || !password) {
+        setError("Session expirée. Veuillez recommencer le login.");
+        return;
+    }
+
+    try {
+        setLoading(true); // Si tu as un état de chargement
+        const data = await loginRequest(cin, password);
+        
+        // On met à jour l'affichage avec le NOUVEAU code du backend
+        setGeneratedCode(data.otp);
+        localStorage.setItem('temp_otp', data.otp);
+        
+        setShowSMS(true); // On réaffiche la bulle
+        console.log("Nouveau code reçu du serveur :", data.otp);
+    } catch (err) {
+        setError("Erreur réseau : impossible de renvoyer le code.");
+    } finally {
+        setLoading(false);
+    }
+};
   return (
     <div className="app-container" style={{ padding: '40px 25px', textAlign: 'center' }}>
 

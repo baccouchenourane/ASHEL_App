@@ -16,41 +16,43 @@ const Login = () => {
   const [showSMS, setShowSMS] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
+const handleLogin = async (e) => {
+  // 1. ARRÊTER le rechargement de la page immédiatement
+  e.preventDefault(); 
+  setError('');
 
-    if (cin.length !== 8) {
-      setError('Le CIN doit comporter 8 chiffres.');
-      return;
-    }
-    if (!password) {
-      setError('Veuillez saisir votre mot de passe.');
-      return;
-    }
+  // 2. VÉRIFIER les champs
+  if (cin.length !== 8) {
+    setError('Le CIN doit comporter 8 chiffres.');
+    return;
+  }
+  if (!password) {
+    setError('Veuillez saisir votre mot de passe.');
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      // Appel réel au backend Spring Boot
-      const data = await loginRequest(cin, password);
+  try {
+    // 3. UN SEUL APPEL au backend ici
+    const data = await loginRequest(cin, password);
+    const otp = data.otp;
 
-      // Le backend retourne l'OTP (simulation - en prod il l'envoie par SMS)
-      const otp = data.otp;
-      setGeneratedCode(otp);
+    // 4. STOCKER les données
+    setGeneratedCode(otp);
+    localStorage.setItem('temp_otp', otp);
+    localStorage.setItem('pending_cin', cin);
+    localStorage.setItem('temp_pwd', password); // Pour le bouton "Renvoyer" plus tard
 
-      // Stocker le CIN pour l'étape OTP suivante
-      localStorage.setItem('temp_otp', otp);
-      localStorage.setItem('pending_cin', cin);
+    // 5. AFFICHER la bulle
+    setShowSMS(true);
 
-      setShowSMS(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="app-container">
 
