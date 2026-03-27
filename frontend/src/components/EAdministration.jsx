@@ -27,6 +27,8 @@ const EAdministration = () => {
   ];
 
   return (
+
+
     <div className="admin-module-container">
       <h2>E-Administration</h2>
       
@@ -102,6 +104,8 @@ const EAdministration = () => {
         </div>
       )}
     </div>
+
+    
   );
 };
 

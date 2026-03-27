@@ -22,6 +22,11 @@ const EAmende = () => {
   };
 
   return (
+        <div className="app-container">
+      <div className="moucharabieh-overlay"></div>
+
+      <div className="page-content">
+        <h2>E-Amende</h2>
     <div style={{ padding: '20px', backgroundColor: '#f4f7fe', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       
       {/* HEADER FIXE */}
@@ -113,6 +118,8 @@ const EAmende = () => {
           </div>
         </div>
       )}
+    </div>
+    </div>
     </div>
   );
 };

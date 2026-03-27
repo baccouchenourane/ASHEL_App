@@ -25,6 +25,11 @@ const PaiementAmende = () => {
   }
 
   return (
+      <div className="app-container">
+      <div className="moucharabieh-overlay"></div>
+
+    <div className="page-content">
+      <h2>Paiement d'Amende</h2>
     <div style={{ backgroundColor: '#f4f7fe', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       
       {/* Header Sécurisé */}
@@ -123,35 +128,76 @@ const PaiementAmende = () => {
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
+    </div>
+    </div>
   );
 };
 
 // --- Vue de Succès ---
 const SuccessView = ({ navigate }) => (
-  <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', textAlign: 'center', backgroundColor: 'white' }}>
-    <div style={{ width: '100px', height: '100px', background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '30px', animation: 'scaleUp 0.5s ease-out' }}>
-      <CheckCircle2 size={50} color="#059669" />
-    </div>
-    <h1 style={{ fontWeight: '900', color: '#1e293b' }}>Paiement Terminé !</h1>
-    <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '40px' }}>
-      Votre transaction a été approuvée. Votre reçu de paiement a été enregistré dans votre profil.
-    </p>
-    <button 
-      onClick={() => navigate('/home')}
-      style={{ width: '100%', maxWidth: '300px', padding: '18px', background: '#1e293b', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}
-    >
-      RETOUR À L'ACCUEIL
-    </button>
+  <div className="app-container">
+    <div className="moucharabieh-overlay"></div>
 
-    <style>{`
-      @keyframes scaleUp {
-        0% { transform: scale(0); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-    `}</style>
+    <div
+      className="page-content"
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "30px",
+        textAlign: "center",
+        backgroundColor: "white",
+      }}
+    >
+      <div
+        style={{
+          width: "100px",
+          height: "100px",
+          background: "#ecfdf5",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: "30px",
+          animation: "scaleUp 0.5s ease-out",
+        }}
+      >
+        <CheckCircle2 size={50} color="#059669" />
+      </div>
+
+      <h1 style={{ fontWeight: "900", color: "#1e293b" }}>
+        Paiement Terminé !
+      </h1>
+
+      <p
+        style={{
+          color: "#64748b",
+          lineHeight: "1.6",
+          marginBottom: "40px",
+        }}
+      >
+        Votre transaction a été approuvée. Votre reçu de paiement a été enregistré dans votre profil.
+      </p>
+
+      <button
+        onClick={() => navigate("/home")}
+        className="btn-ashal-primary"
+        style={{ maxWidth: "300px" }}
+      >
+        RETOUR À L'ACCUEIL
+      </button>
+
+      <style>{`
+        @keyframes scaleUp {
+          0% { transform: scale(0); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
+    </div>
   </div>
 );
-
 // Styles réutilisables
 const inputStyle = {
   width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', 
