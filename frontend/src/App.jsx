@@ -5,6 +5,7 @@ import EAmende from './components/EAmende';
 import Login from './components/Login';
 import Register from './components/Register';
 import PaiementAmende from './components/paiementamende';
+import VerifyOTP from './components/verifyotp';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/e-amende" element={<EAmende />} />
         <Route path="/paiement-amende" element={<PaiementAmende />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         {/* Ajoute les autres routes ici plus tard */}
       </Routes>
     </Router>

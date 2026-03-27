@@ -213,3 +213,27 @@ body {
   border-radius: 10px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.btn-ashal-primary {
+  background: #E70011;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 18px;
+  border-radius: 15px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(231, 0, 17, 0.2);
+  transition: 0.3s;
+}
+
+.btn-ashal-primary:hover {
+  transform: translateY(-2px);
+  background: #c5000e;
+}
+
+/* Animation pour la bulle SMS */
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
