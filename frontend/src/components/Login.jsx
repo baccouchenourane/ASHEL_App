@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Fingerprint, AlertCircle, Check } from 'lucide-react';
 import '../App.css'; 
 import logoAshel from '../assets/logo_ashel.png';
+import { loginRequest } from '../services/api'; // <--- IMPORTATION IMPORTANTE
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Login = () => {
   const [showSMS, setShowSMS] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => { // <--- AJOUT DE async
     e.preventDefault();
     setError('');
     
@@ -26,21 +27,30 @@ const Login = () => {
 
     setLoading(true);
 
-    // 1. On génère le code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    localStorage.setItem('temp_otp', code);
+    try {
+      // 1. APPEL RÉEL AU BACKEND (On n'utilise plus Math.random)
+      const data = await loginRequest(cin, password);
+      const serverOtp = data.otp;
 
-    // 2. Simulation de vérification réseau
-    setTimeout(() => {
+      // 2. MISE À JOUR DES ÉTATS ET DU STORAGE
+      setGeneratedCode(serverOtp);
+      localStorage.setItem('temp_otp', serverOtp);
+      localStorage.setItem('pending_cin', cin);
+      localStorage.setItem('temp_pwd', password); // Sauvegardé pour le "Renvoyer"
+
+      // 3. AFFICHAGE DU SMS
+      setShowSMS(true);
+
+    } catch (err) {
+      setError(err.message || "Erreur de connexion au serveur.");
+    } finally {
       setLoading(false);
-      setShowSMS(true); // On affiche le SMS et on attend l'utilisateur
-    }, 1500);
+    }
   };
 
   return (
     <div className="app-container">
-      {/* --- LE SMS QUI RESTE AFFICHÉ JUSQU'AU CLIC --- */}
+      {/* --- LE SMS SYNCHRONISÉ AVEC LE BACKEND --- */}
       {showSMS && (
         <div style={{
           position: 'absolute', top: '15px', left: '15px', right: '15px',
@@ -57,7 +67,6 @@ const Login = () => {
                 ASHAL : Votre code de sécurité est <strong style={{ fontSize: '1.1rem', color: '#E70011' }}>{generatedCode}</strong>.
               </p>
             </div>
-            {/* BOUTON POUR VALIDER ET PASSER À LA SUITE */}
             <button 
               onClick={() => navigate('/verify-otp')}
               style={{
@@ -92,12 +101,26 @@ const Login = () => {
           {error && <div style={{ color: '#B91C1C', fontSize: '0.8rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}><AlertCircle size={14} /> {error}</div>}
           
           <div className="input-group">
-            <input type="text" placeholder="Numéro CIN (8 chiffres)" className="ashal-input" value={cin} onChange={(e) => setCin(e.target.value.replace(/\D/g, '').slice(0, 8))} required />
+            <input 
+                type="text" 
+                placeholder="Numéro CIN (8 chiffres)" 
+                className="ashal-input" 
+                value={cin} 
+                onChange={(e) => setCin(e.target.value.replace(/\D/g, '').slice(0, 8))} 
+                required 
+            />
             <Mail size={18} className="input-icon" />
           </div>
           
           <div className="input-group">
-            <input type="password" placeholder="Mot de passe" className="ashal-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input 
+                type="password" 
+                placeholder="Mot de passe" 
+                className="ashal-input" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+            />
             <Lock size={18} className="input-icon" />
           </div>
           
