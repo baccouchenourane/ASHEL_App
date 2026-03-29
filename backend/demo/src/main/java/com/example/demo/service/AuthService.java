@@ -42,7 +42,7 @@ public class AuthService {
      */
     public User verifyOtp(String cin, String code) {
         System.out.println("Vérification pour CIN: " + cin); // Debug
-    System.out.println("Code reçu du frontend: [" + code + "]"); // Debug
+    System.out.println("Code reçu du frontend: [" + code + "]");
         boolean valid = otpService.verifyOtp(cin, code);
         if (!valid) {
             throw new RuntimeException("Code OTP invalide ou expiré.");

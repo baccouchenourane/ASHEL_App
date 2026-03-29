@@ -1,8 +1,8 @@
 // src/services/api.js
 // Couche d'accès à l'API backend ASHEL
- 
+
 const BASE_URL = 'http://localhost:8081/api';
- 
+
 /**
  * Étape 1 du login : vérifier CIN + mot de passe, recevoir l'OTP
  * @returns { otp: "123456" }
@@ -17,7 +17,7 @@ export async function loginRequest(cin, password) {
   if (!res.ok) throw new Error(data.error || 'Erreur de connexion');
   return data;
 }
- 
+
 /**
  * Étape 2 du login : vérifier l'OTP, recevoir les infos utilisateur
  * @returns { user: { nom, cin, id } }
@@ -32,7 +32,7 @@ export async function verifyOtpRequest(cin, otp) {
   if (!res.ok) throw new Error(data.error || 'OTP invalide');
   return data;
 }
- 
+
 /**
  * Inscription d'un nouvel utilisateur
  */
@@ -46,4 +46,3 @@ export async function registerRequest(cin, nom, password, phone) {
   if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'inscription');
   return data;
 }
- 

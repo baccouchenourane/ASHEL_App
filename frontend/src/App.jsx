@@ -11,10 +11,9 @@ import BirthCertificationForm from './components/BirthCertificationForm';
 import BulletinB3Form from './components/BulletinB3Form'; 
 import RegisterForm from './components/RegisterForm';
 import Login from './components/Login';
-import Register from './components/Register'; 
+import Register from './components/Register';
 import PaiementAmende from './components/PaiementAmende'; 
-import VerifyOTP from './components/VOTP'; // Note: Vérifiez si le fichier est VOTP ou verifyotp selon votre structure
-import SupportAide from './components/SupportAide'; 
+import VerifyOTP from './components/verifyotp';
 
 // Nouveaux imports issus de la fusion
 import Signalement from './components/Signalement';
@@ -91,36 +90,14 @@ const GlobalChatbot = () => {
 function App() {
   return (
     <Router>
-      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
-        <Routes>
-          {/* Authentification */}
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-otp" element={<VerifyOTP />} />
-          
-          {/* Pages principales */}
-          <Route path="/home" element={<Home />} />
-          <Route path="/e-amende" element={<EAmende />} />
-          <Route path="/paiement-amende" element={<PaiementAmende />} />
-          <Route path="/e-admin" element={<EAdministration />} /> 
-          
-          {/* Services Citoyens */}
-          <Route path="/extrait-naissance" element={<BirthCertificationForm onBack={() => window.history.back()} />} />
-          <Route path="/bulletin-b3" element={<BulletinB3Form onBack={() => window.history.back()} />} />
-          <Route path="/registre-commerce" element={<RegisterForm onBack={() => window.history.back()} />} />
-          
-          {/* Nouvelles fonctionnalités fusionnées */}
-          <Route path="/signalement" element={<Signalement />} />
-          <Route path="/evaluation" element={<Evaluation />} />
-          <Route path="/reclamation" element={<Reclamation />} />
-
-          {/* Support */}
-          <Route path="/support" element={<SupportAide onBack={() => window.history.back()} />} />
-        </Routes>
-        
-        {/* Le chatbot s'affichera sur toutes les pages sauf auth */}
-        <GlobalChatbot />
-      </div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/e-amende" element={<EAmende />} />
+        <Route path="/paiement-amende" element={<PaiementAmende />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+      </Routes>
     </Router>
   );
 }
