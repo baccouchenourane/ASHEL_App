@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { MessageCircle, X } from 'lucide-react';
 
-// Vos imports existants
+// --- IMPORTS DES COMPOSANTS ---
 import Home from './components/Home'; 
 import EAmende from './components/EAmende';
 import EAdministration from './components/EAdministration'; 
@@ -10,9 +11,15 @@ import BirthCertificationForm from './components/BirthCertificationForm';
 import BulletinB3Form from './components/BulletinB3Form'; 
 import RegisterForm from './components/RegisterForm';
 import Login from './components/Login';
+import Register from './components/Register'; 
 import PaiementAmende from './components/PaiementAmende'; 
-import VerifyOTP from './components/VOTP';
+import VerifyOTP from './components/VOTP'; // Note: Vérifiez si le fichier est VOTP ou verifyotp selon votre structure
 import SupportAide from './components/SupportAide'; 
+
+// Nouveaux imports issus de la fusion
+import Signalement from './components/Signalement';
+import Evaluation from './components/Evaluation';
+import Reclamation from './components/Reclamation';
 
 // --- COMPOSANT CHATBOT GLOBAL ---
 const GlobalChatbot = () => {
@@ -30,7 +37,7 @@ const GlobalChatbot = () => {
     }
   }, [location.pathname]);
 
-  // Cacher le bot sur les pages d'auth
+  // Masquer le bot sur les pages de connexion/inscription
   const hiddenRoutes = ['/', '/register', '/verify-otp'];
   if (hiddenRoutes.includes(location.pathname)) return null;
 
@@ -80,30 +87,45 @@ const GlobalChatbot = () => {
   );
 };
 
+// --- COMPOSANT PRINCIPAL APP ---
 function App() {
   return (
     <Router>
       <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
         <Routes>
+          {/* Authentification */}
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
+          
+          {/* Pages principales */}
+          <Route path="/home" element={<Home />} />
           <Route path="/e-amende" element={<EAmende />} />
           <Route path="/paiement-amende" element={<PaiementAmende />} />
           <Route path="/e-admin" element={<EAdministration />} /> 
-          <Route path="/support" element={<SupportAide onBack={() => window.history.back()} />} />
+          
+          {/* Services Citoyens */}
           <Route path="/extrait-naissance" element={<BirthCertificationForm onBack={() => window.history.back()} />} />
           <Route path="/bulletin-b3" element={<BulletinB3Form onBack={() => window.history.back()} />} />
           <Route path="/registre-commerce" element={<RegisterForm onBack={() => window.history.back()} />} />
+          
+          {/* Nouvelles fonctionnalités fusionnées */}
+          <Route path="/signalement" element={<Signalement />} />
+          <Route path="/evaluation" element={<Evaluation />} />
+          <Route path="/reclamation" element={<Reclamation />} />
+
+          {/* Support */}
+          <Route path="/support" element={<SupportAide onBack={() => window.history.back()} />} />
         </Routes>
+        
+        {/* Le chatbot s'affichera sur toutes les pages sauf auth */}
         <GlobalChatbot />
       </div>
     </Router>
   );
 }
 
-// --- STYLES ---
+// --- STYLES (Conservés du fichier original) ---
 const fabContainer = { position: 'fixed', bottom: '100px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', zIndex: 9999 };
 const fabStyle = { background: '#0056D2', width: '60px', height: '60px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' };
 const notifBadge = { position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: 'white', fontSize: '10px', padding: '4px 7px', borderRadius: '10px', border: '2px solid white' };

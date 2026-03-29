@@ -22,10 +22,10 @@ public class OtpService {
 
     public boolean verifyOtp(String cin, String code) {
         String stored = otpStore.get(cin);
-        if (stored != null && stored.equals(code)) {
-            otpStore.remove(cin); // invalider après usage
-            return true;
-        }
-        return false;
+    if (stored != null && stored.trim().equals(code.trim())) {
+        otpStore.remove(cin);
+        return true;
+    }
+    return false;
     }
 }

@@ -26,9 +26,8 @@ export async function verifyOtpRequest(cin, code) {
   const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cin, code }), // <--- "code" doit matcher le backend
+    body: JSON.stringify({ cin, code: code.trim() }), // ← ajoute .trim()
   });
-
   if (!res.ok) {
     const data = await res.json();
     throw new Error(data.message || 'Code OTP invalide');

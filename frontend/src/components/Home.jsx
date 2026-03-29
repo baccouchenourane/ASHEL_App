@@ -1,9 +1,24 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, FileText, CreditCard, Users, LayoutGrid,
-  User, CreditCard as PassportIcon, Car,
-  ChevronRight, Search, QrCode, Signal, Wifi, Battery, X, ScanLine, ShieldCheck, ExternalLink
+  Bell, 
+  FileText, 
+  CreditCard, 
+  Users, 
+  LayoutGrid,
+  User, 
+  Car,
+  ChevronRight, 
+  Search, 
+  QrCode, 
+  Signal, 
+  Wifi, 
+  Battery, 
+  X, 
+  ScanLine, 
+  ShieldCheck, 
+  ExternalLink,
+  MessageSquare 
 } from 'lucide-react';
 
 const Home = () => {
@@ -11,7 +26,6 @@ const Home = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
 
-  // Optimisation : Memoïsation des données utilisateur pour éviter les parse répétitifs
   const userData = useMemo(() => {
     try {
       const saved = localStorage.getItem('user_ashel');
@@ -50,7 +64,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div style={scrollContent}>
+        <div style={scrollContent} className="app-scroll">
           
           <div style={headerStyle}>
             <div style={headerBgIcons}>
@@ -95,7 +109,7 @@ const Home = () => {
                 onClick={() => setSelectedDoc({ title: "Carte d'Identité", id: userData.cin })}
               />
               <DocumentCard 
-                icon={<PassportIcon size={20} />} title="PASSEPORT" color="#F0F9FF" textColor="#0369A1" 
+                icon={<FileText size={20} />} title="PASSEPORT" color="#F0F9FF" textColor="#0369A1" 
                 onClick={() => setSelectedDoc({ title: "Passeport Tunisien", id: "P-TN99210" })}
               />
               <DocumentCard 
@@ -136,6 +150,7 @@ const Home = () => {
           <NavItem icon={<LayoutGrid size={22} />} label="Accueil" active />
           <NavItem icon={<FileText size={22} />} label="E-Admin" onClick={() => navigate('/e-admin')} />
           <NavItem icon={<CreditCard size={22} />} label="Amendes" onClick={() => navigate('/e-amende')} />
+          <NavItem icon={<MessageSquare size={22} />} label="Réclamation" onClick={() => navigate('/reclamation')} />
           <NavItem icon={<User size={22} />} label="Profil" onClick={() => navigate('/profil')} />
         </nav>
 
@@ -195,7 +210,7 @@ const Home = () => {
   );
 };
 
-// --- STYLES (INCHANGÉS) ---
+// --- STYLES ---
 const viewport = { backgroundColor: '#e2e8f0', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' };
 const phoneFrame = { width: '375px', height: '780px', backgroundColor: '#ffffff', borderRadius: '50px', border: '12px solid #0f172a', position: 'relative', overflow: 'hidden', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' };
 const statusBar = { height: '44px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 32px', color: '#1e293b' };

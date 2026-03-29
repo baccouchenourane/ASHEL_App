@@ -20,26 +20,39 @@ const VerifyOTP = () => {
     if (savedOTP) setGeneratedCode(savedOTP);
   }, []);
 
- const handleVerify = async (e) => {
+const handleVerify = async (e) => {
   e.preventDefault();
-  const cin = localStorage.getItem('pending_cin'); // Récupère le CIN stocké au login
+  const cin = localStorage.getItem('pending_cin');
+  
+  console.log("=== VERIFY OTP ===");
+  console.log("CIN:", cin);
+  console.log("OTP saisi:", otp);
 
   try {
-    // 1. Appel au backend pour valider officiellement l'OTP
-    const data = await verifyOtpRequest(cin, otp); 
+    const res = await fetch('http://localhost:8081/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cin, code: otp.trim() }),
+    });
 
-    // 2. Si c'est bon, on stocke les infos de l'utilisateur (nom, id, etc.)
-    localStorage.setItem('user', JSON.stringify(data));
+    console.log("Status HTTP:", res.status);
+    const data = await res.json();
+    console.log("Réponse backend:", data);
 
-    // 3. Nettoyage des données temporaires
+    if (!res.ok) {
+      throw new Error(data.message || 'Erreur');
+    }
+
+    localStorage.setItem('user_ashel', JSON.stringify(data.user));
     localStorage.removeItem('temp_otp');
     localStorage.removeItem('temp_pwd');
     localStorage.removeItem('pending_cin');
 
-    // 4. Direction l'accueil
+    console.log("✅ Navigation vers /home...");
     navigate('/home');
+
   } catch (err) {
-    // 5. Si le backend dit que c'est faux
+    console.error("❌ ERREUR:", err.message);
     setError(true);
     setTimeout(() => setError(false), 2500);
   }

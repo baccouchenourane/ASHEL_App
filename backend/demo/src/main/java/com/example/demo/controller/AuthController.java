@@ -34,29 +34,26 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
-        try {
-            String cin = body.get("cin");
-            // ON UTILISE "code" pour matcher exactement le paramètre de AuthService
-            String otp = body.get("otp"); 
-            
-            // Si dans ton AuthService c'est (cin, code), assure-toi que la variable passée ici est la bonne
-            User user = authService.verifyOtp(cin, otp);
+ @PostMapping("/verify-otp")
+public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
+    try {
+        String cin = body.get("cin");
+        String otp = body.get("code"); // ✅ correspond à api.js qui envoie { cin, code }
+        
+        User user = authService.verifyOtp(cin, otp);
 
-            return ResponseEntity.ok(Map.of(
-                "message", "Authentification réussie",
-                "user", Map.of(
-                    "id", user.getId(),
-                    "nom", user.getNom(),
-                    "cin", user.getCin()
-                )
-            ));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of(
+            "message", "Authentification réussie",
+            "user", Map.of(
+                "id", user.getId(),
+                "nom", user.getNom(),
+                "cin", user.getCin()
+            )
+        ));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
-
+}
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         try {
