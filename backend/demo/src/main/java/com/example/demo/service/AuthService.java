@@ -42,13 +42,21 @@ public class AuthService {
      */
     public User verifyOtp(String cin, String code) {
         System.out.println("Vérification pour CIN: " + cin); // Debug
-    System.out.println("Code reçu du frontend: [" + code + "]");
-        boolean valid = otpService.verifyOtp(cin, code);
-        if (!valid) {
+        System.out.println("Code reçu du frontend: [" + code + "]");
+
+        if (!otpService.verifyOtp(cin, code)) {
             throw new RuntimeException("Code OTP invalide ou expiré.");
         }
+
         return userRepository.findByCin(cin)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
+    }
+
+    /**
+     * Renvoie un nouvel OTP pour le CIN donné.
+     */
+    public String resendOtp(String cin) {
+        return otpService.resendOtp(cin);
     }
 
     /**

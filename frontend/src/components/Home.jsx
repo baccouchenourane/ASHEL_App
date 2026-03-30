@@ -8,6 +8,8 @@ import {
 
 const Home = () => {
   const navigate = useNavigate();
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
 
   // Récupérer les données utilisateur sauvegardées après vérification OTP
   const userData = JSON.parse(localStorage.getItem('user_ashel')) || {
@@ -135,6 +137,142 @@ const Home = () => {
             <ChevronRight size={18} color="#cbd5e1" />
           </div>
         </div>
+
+        <div style={scrollContent} className="app-scroll">
+          
+          <div style={headerStyle}>
+            <div style={headerBgIcons}>
+              <LayoutGrid size={320} style={{ position: 'absolute', right: -60, top: -60, opacity: 0.08 }} />
+            </div>
+
+            <div style={headerTopRow}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={avatarBox}><User size={24} color="white" /></div>
+                <div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: 0, letterSpacing: '-0.3px' }}>{userData.nom}</h3>
+                  <p style={{ fontSize: '0.7rem', opacity: 0.8, margin: 0, fontWeight: '600' }}>ID: {formatCIN(userData.cin)}</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={iconCircle}><Bell size={18} /></div>
+                <button onClick={handleLogout} style={logoutBtn}>QUITTER</button>
+              </div>
+            </div>
+
+            <div onClick={() => setShowScanner(true)} style={idCardStyle}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div style={qrIconBox}><QrCode size={24} /></div>
+                <div>
+                  <p style={labelCap}>IDENTITÉ DIGITALE</p>
+                  <p style={statusText}>ACTIF / VÉRIFIÉ</p>
+                </div>
+              </div>
+              <div style={scanPulse}>SCANNER</div>
+            </div>
+          </div>
+
+          <div style={{ padding: '25px 20px 0 20px' }}>
+            <div style={sectionHeader}>
+              <h4 style={sectionTitle}>Mes Documents</h4>
+              <span style={viewAllLink}>Tout voir</span>
+            </div>
+
+            <div style={docScrollContainer}>
+              <DocumentCard 
+                icon={<CreditCard size={20} />} title="CIN" color="#F1F5FF" textColor="#0056D2" 
+                onClick={() => setSelectedDoc({ title: "Carte d'Identité", id: userData.cin })}
+              />
+              <DocumentCard 
+                icon={<FileText size={20} />} title="PASSEPORT" color="#F0F9FF" textColor="#0369A1" 
+                onClick={() => setSelectedDoc({ title: "Passeport Tunisien", id: "P-TN99210" })}
+              />
+              <DocumentCard 
+                icon={<Car size={20} />} title="PERMIS" color="#FFF9F5" textColor="#EA580C" 
+                onClick={() => setSelectedDoc({ title: "Permis de Conduire", id: "01/12345" })}
+              />
+            </div>
+          </div>
+
+          <div style={{ padding: '20px' }}>
+            <h4 style={sectionTitle}>Notifications de services</h4>
+            <div style={notifBox}>
+              <div onClick={() => navigate('/e-amende')} style={notifItem}>
+                <div style={notifIconRed}><CreditCard size={18} /></div>
+                <div style={{ flex: 1 }}>
+                  <h5 style={notifTitle}>E-Amende</h5>
+                  <p style={notifSubRed}>1 amende non payée (60.000 DT)</p>
+                </div>
+                <ChevronRight size={16} color="#cbd5e1" />
+              </div>
+
+              <div style={notifDivider} />
+
+              <div onClick={() => navigate('/e-admin')} style={notifItem}>
+                <div style={notifIconBlue}><FileText size={18} /></div>
+                <div style={{ flex: 1 }}>
+                  <h5 style={notifTitle}>E-Administration</h5>
+                  <p style={notifSubGrey}>Extrait de naissance disponible</p>
+                </div>
+                <ChevronRight size={16} color="#cbd5e1" />
+              </div>
+            </div>
+          </div>
+          <div style={{ height: '100px' }} />
+        </div>
+
+        <nav style={navBar}>
+          <NavItem icon={<LayoutGrid size={22} />} label="Accueil" active />
+          <NavItem icon={<FileText size={22} />} label="E-Admin" onClick={() => navigate('/e-admin')} />
+          <NavItem icon={<CreditCard size={22} />} label="Amendes" onClick={() => navigate('/e-amende')} />
+          <NavItem icon={<MessageSquare size={22} />} label="Réclamation" onClick={() => navigate('/reclamation')} />
+          <NavItem icon={<User size={22} />} label="Profil" onClick={() => navigate('/profil')} />
+        </nav>
+
+        {showScanner && (
+          <div style={modalOverlay} onClick={() => setShowScanner(false)}>
+            <div style={scannerContainer} onClick={e => e.stopPropagation()}>
+              <div style={modalHeaderPro}>
+                <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800' }}>VÉRIFICATION QR</h3>
+                <X onClick={() => setShowScanner(false)} style={{ cursor: 'pointer' }} size={20} />
+              </div>
+              <div style={scanWindow}>
+                <div style={laserLine} />
+                <QrCode size={140} color="rgba(255,255,255,0.15)" />
+                <div style={cornerTL} /><div style={cornerTR} />
+                <div style={cornerBL} /><div style={cornerBR} />
+              </div>
+              <p style={scannerSub}>Placez le code dans le cadre</p>
+            </div>
+          </div>
+        )}
+
+        {selectedDoc && (
+          <div style={modalOverlay} onClick={() => setSelectedDoc(null)}>
+            <div style={modalContentPro} onClick={e => e.stopPropagation()}>
+              <div style={modalHeaderProBlack}>
+                <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800' }}>{selectedDoc.title}</h3>
+                <X onClick={() => setSelectedDoc(null)} style={{ cursor: 'pointer' }} size={20} />
+              </div>
+              <div style={proDocCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <ShieldCheck color="#0056D2" size={20} />
+                  <span style={badgePro}>CERTIFIÉ CONFORME</span>
+                </div>
+                <div style={docIdDisplay}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: '900', letterSpacing: '1.5px' }}>{selectedDoc.id}</span>
+                  <ExternalLink size={14} color="#94a3b8" />
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={docPhotoPlaceholder} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
+                    <div style={docLineFull} /><div style={docLineMid} /><div style={docLineShort} />
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedDoc(null)} style={closeBtnPro}>RETOUR</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 4. Navigation Tab Bar */}
@@ -161,7 +299,7 @@ const DocumentCard = ({ icon, title, color, textColor }) => (
     display: 'flex', flexDirection: 'column', gap: '15px', border: `1px solid ${color}`
   }}>
     <div style={{ color: textColor }}>{icon}</div>
-    <span style={{ fontWeight: '800', color: textColor, fontSize: '0.9rem' }}>{title}</span>
+    <span style={{ fontWeight: '900', color: textColor, fontSize: '0.75rem', letterSpacing: '0.3px' }}>{title}</span>
   </div>
 );
 
