@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { MessageCircle, X } from 'lucide-react';
@@ -9,16 +8,19 @@ import EAmende from './components/EAmende';
 import EAdministration from './components/EAdministration'; 
 import BirthCertificationForm from './components/BirthCertificationForm'; 
 import BulletinB3Form from './components/BulletinB3Form'; 
-import RegisterForm from './components/RegisterForm';
+import WorkCertificateForm from './components/WorkCertificateForm'; 
 import Login from './components/Login';
 import Register from './components/Register';
 import PaiementAmende from './components/PaiementAmende'; 
-import VerifyOTP from './components/verifyotp';
+
+// CORRECTION : On pointe vers le nom réel du fichier "VOTP"
+import VerifyOTP from "./components/VOTP"; 
 
 // Nouveaux imports issus de la fusion
 import Signalement from './components/Signalement';
 import Evaluation from './components/Evaluation';
 import Reclamation from './components/Reclamation';
+import SupportAide from './components/SupportAide'; 
 
 // --- COMPOSANT CHATBOT GLOBAL ---
 const GlobalChatbot = () => {
@@ -26,17 +28,22 @@ const GlobalChatbot = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const location = useLocation();
 
-  // Affichage de la bulle d'aide temporaire
   useEffect(() => {
+    // Liste des routes où le chatbot doit être masqué
     const hiddenRoutes = ['/', '/register', '/verify-otp'];
+    
     if (!hiddenRoutes.includes(location.pathname)) {
+      // Apparition du tooltip après 1.5s, disparition après 5.5s
       const timer = setTimeout(() => setShowTooltip(true), 1500);
       const hideTimer = setTimeout(() => setShowTooltip(false), 5500);
       return () => { clearTimeout(timer); clearTimeout(hideTimer); };
+    } else {
+      // Si on est sur une page d'auth, on ferme tout
+      setShowTooltip(false);
+      setIsOpen(false);
     }
   }, [location.pathname]);
 
-  // Masquer le bot sur les pages de connexion/inscription
   const hiddenRoutes = ['/', '/register', '/verify-otp'];
   if (hiddenRoutes.includes(location.pathname)) return null;
 
@@ -52,6 +59,7 @@ const GlobalChatbot = () => {
             <X size={20} onClick={() => setIsOpen(false)} style={{cursor:'pointer'}} />
           </div>
           <div style={{flex: 1, overflow: 'hidden', backgroundColor: '#F8FAFC'}}>
+             {/* Le composant SupportAide sert d'interface au bot */}
              <SupportAide onBack={() => setIsOpen(false)} isEmbedded={true} />
           </div>
         </div>
@@ -69,7 +77,43 @@ const GlobalChatbot = () => {
           </button>
         </div>
       )}
+    </>
+  );
+};
 
+// --- COMPOSANT PRINCIPAL APP ---
+function App() {
+  return (
+    <Router>
+      {/* Le Chatbot est placé ici pour surveiller les changements de routes */}
+      <GlobalChatbot /> 
+
+      <Routes>
+        {/* Authentification */}
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+
+        {/* Accueil */}
+        <Route path="/home" element={<Home />} />
+        
+        {/* Services E-Administration */}
+        <Route path="/e-admin" element={<EAdministration />} />
+        <Route path="/birth-certification" element={<BirthCertificationForm />} />
+        <Route path="/bulletin-b3" element={<BulletinB3Form />} />
+        <Route path="/work-certificate" element={<WorkCertificateForm />} />
+        
+        {/* Services E-Amende */}
+        <Route path="/e-amende" element={<EAmende />} />
+        <Route path="/paiement-amende" element={<PaiementAmende />} />
+
+        {/* Services GovTech / Citoyenneté */}
+        <Route path="/signalement" element={<Signalement />} />
+        <Route path="/evaluation" element={<Evaluation />} />
+        <Route path="/reclamation" element={<Reclamation />} />
+      </Routes>
+
+      {/* Animations CSS injectées */}
       <style>{`
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -82,29 +126,13 @@ const GlobalChatbot = () => {
           100% { box-shadow: 0 0 0 0 rgba(0, 86, 210, 0); } 
         }
       `}</style>
-    </>
-  );
-};
-
-// --- COMPOSANT PRINCIPAL APP ---
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/e-amende" element={<EAmende />} />
-        <Route path="/paiement-amende" element={<PaiementAmende />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
-      </Routes>
     </Router>
   );
 }
 
-// --- STYLES (Conservés du fichier original) ---
-const fabContainer = { position: 'fixed', bottom: '100px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', zIndex: 9999 };
-const fabStyle = { background: '#0056D2', width: '60px', height: '60px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' };
+// --- STYLES (Objets JavaScript) ---
+const fabContainer = { position: 'fixed', bottom: '30px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', zIndex: 9999 };
+const fabStyle = { background: '#0056D2', width: '60px', height: '60px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,0,0,0.2)', position: 'relative' };
 const notifBadge = { position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: 'white', fontSize: '10px', padding: '4px 7px', borderRadius: '10px', border: '2px solid white' };
 const tooltipStyle = { background: '#1E293B', color: 'white', padding: '10px 15px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' };
 const tooltipArrow = { position: 'absolute', bottom: '-5px', right: '20px', width: '10px', height: '10px', background: '#1E293B', transform: 'rotate(45deg)' };
