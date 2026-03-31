@@ -95,8 +95,7 @@ function App() {
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
         {/* Accueil */}
-        <Route path="/home" element={<Home />} />
-        
+        <Route path="/home" element={<Home />} />        
         {/* Services E-Administration */}
         <Route path="/e-admin" element={<EAdministration />} />
         <Route path="/birth-certification" element={<BirthCertificationForm />} />

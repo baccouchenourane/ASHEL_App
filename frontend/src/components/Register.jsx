@@ -54,7 +54,7 @@ const RegisterForm = () => {
         setLoading(true);
 
         // Appel au Backend Spring Boot
-        const response = await axios.post("http://localhost:8080/api/auth/register", {
+        const response = await axios.post("http://localhost:8081/api/auth/register", {
           cin: form.cin,
           nom: `${form.prenom} ${form.nom}`,
           password: form.password,
@@ -81,6 +81,37 @@ const RegisterForm = () => {
       }
     }, 2500);
   };
+  const handleFinalStep = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+
+  // Préparation des données pour correspondre à ton backend
+  const userData = {
+    cin: form.cin,
+    nom: `${form.nom} ${form.prenom}`, // On combine nom et prénom pour le champ 'nom' du backend
+    password: form.password,
+    phone: form.telephone // On mappe 'telephone' vers 'phone' attendu par l'API
+  };
+
+  try {
+    const response = await axios.post("http://localhost:8081/api/auth/register", userData);
+    
+    if (response.data) {
+      // On stocke les infos temporairement pour l'étape OTP
+      localStorage.setItem("pending_cin", form.cin);
+      localStorage.setItem("pending_user", JSON.stringify(userData)); 
+      
+      setStep(4); // Passe à l'étape de succès ou redirection
+      setTimeout(() => navigate("/verify-otp"), 2000);
+    }
+  } catch (err) {
+    // Affiche l'erreur précise du backend s'il y en a une
+    setError(err.response?.data?.message || "Erreur lors de la création du compte.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const totalSteps = 3;
   const progressWidth = `${(step / totalSteps) * 100}%`;
