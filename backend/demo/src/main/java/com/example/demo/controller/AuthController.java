@@ -11,14 +11,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173") // Port par défaut de Vite
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
     /**
-     * LOGIN : génère un OTP
+     * LOGIN : Vérifie les identifiants et génère un OTP
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
@@ -45,64 +45,39 @@ public class AuthController {
     }
 
     /**
-     * VERIFY OTP
+     * VERIFY-OTP : La méthode qui manquait pour valider le code
      */
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
         try {
             String cin = body.get("cin");
-            String otp = body.get("otp");
+            String code = body.get("code");
 
-            if (cin == null || otp == null || cin.isEmpty() || otp.isEmpty()) {
+            if (cin == null || code == null || cin.isEmpty() || code.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "CIN ou OTP manquant"));
+                        .body(Map.of("error", "Paramètres manquants"));
             }
 
-            User user = authService.verifyOtp(cin, otp);
+            // On appelle le service pour vérifier la validité
+            boolean isValid = authService.verifyOtp(cin, code);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Authentification réussie",
-                    "user", Map.of(
-                            "id", user.getId(),
-                            "nom", user.getNom(),
-                            "cin", user.getCin()
-                    )
-            ));
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+            if (isValid) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Vérification réussie"
+                ));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Code OTP incorrect ou expiré"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erreur lors de la vérification : " + e.getMessage()));
         }
     }
 
     /**
-     * RESEND OTP
-     */
-    @PostMapping("/resend-otp")
-    public ResponseEntity<?> resendOtp(@RequestBody Map<String, String> body) {
-        try {
-            String cin = body.get("cin");
-
-            if (cin == null || cin.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "CIN manquant"));
-            }
-
-            String newOtp = authService.resendOtp(cin);
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Nouveau code OTP envoyé",
-                    "otp", newOtp
-            ));
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Impossible de renvoyer le code : " + e.getMessage()));
-        }
-    }
-
-    /**
-     * REGISTER
+     * REGISTER : Création de compte
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
@@ -114,7 +89,6 @@ public class AuthController {
 
             if (cin == null || nom == null || password == null || phone == null ||
                 cin.isEmpty() || nom.isEmpty() || password.isEmpty() || phone.isEmpty()) {
-
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Tous les champs sont obligatoires"));
             }
@@ -129,6 +103,26 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * RESEND-OTP : Renvoyer un nouveau code
+     */
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestBody Map<String, String> body) {
+        try {
+            String cin = body.get("cin");
+            String newOtp = authService.resendOtp(cin);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Nouveau code OTP envoyé",
+                    "otp", newOtp
+            ));
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Impossible de renvoyer le code : " + e.getMessage()));
         }
     }
 }
