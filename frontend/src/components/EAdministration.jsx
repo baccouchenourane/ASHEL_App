@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, FileText, Search, ShieldCheck, 
   ChevronRight, Users, Briefcase, Bell, 
-  Home as HomeIcon, ClipboardList, Shield, X, CheckCircle
+  Home as HomeIcon, ClipboardList, Shield, X, CheckCircle,
+  Signal, Wifi, Battery // Ajouté pour la barre d'état
 } from 'lucide-react';
 
 import BirthCertificationForm from './BirthCertificationForm'; 
@@ -14,7 +15,7 @@ import ResidenceCertificateForm from './ResidenceCertificateForm';
 import SalarySlipForm from './SalarySlipForm';
 import DocumentVault from './DocumentVault';
 
-// --- CONSTANTES DE DONNÉES (Professionnel : séparé du composant) ---
+// --- CONSTANTES DE DONNÉES ---
 const CATEGORIES = ["Tous", "Famille", "Justice", "Social", "RNE"];
 
 const SERVICES = [
@@ -40,7 +41,6 @@ const EAdministration = () => {
     { id: 2, title: "Sécurité", msg: "Connexion réussie via ID-Numérique.", time: "Hier", read: true }
   ]);
 
-  // Simulation d'une notification push sécurisée
   useEffect(() => {
     const toastTimer = setTimeout(() => {
       setShowToast(true);
@@ -64,7 +64,7 @@ const EAdministration = () => {
     );
   }, [activeCategory, searchTerm]);
 
-  // --- RENDU CONDITIONNEL PRO ---
+  // --- RENDU CONDITIONNEL ---
   if (view === 'form' && selectedId) {
     const SelectedForm = SERVICES.find(s => s.id === selectedId)?.component;
     return SelectedForm ? <SelectedForm onBack={() => setView('list')} /> : null;
@@ -73,128 +73,152 @@ const EAdministration = () => {
   if (view === 'vault') return <DocumentVault onBack={() => setView('list')} />;
 
   return (
-    <div style={styles.container} className="fade-in">
-      
-      {/* TOAST SECURE */}
-      {showToast && (
-        <div style={styles.toastContainer} className="slide-down">
-          <div style={styles.toastContent}>
-            <div style={styles.toastIcon}><CheckCircle size={18} color="white" /></div>
-            <div style={{flex: 1}}>
-              <p style={styles.toastTitle}>Notification Système</p>
-              <p style={styles.toastText}>Nouvelle mise à jour de dossier.</p>
-            </div>
-            <button onClick={() => setShowToast(false)} style={styles.toastClose}><X size={14} /></button>
+    <div style={phoneStyles.screenWrapper}>
+      <div className="app-container">
+        {/* Barre d'état iPhone Style */}
+        <div style={phoneStyles.statusBar}>
+          <span style={phoneStyles.statusTime}>09:41</span>
+          <div style={phoneStyles.statusIcons}>
+            <Signal size={13} /> <Wifi size={13} /> <Battery size={15} />
           </div>
         </div>
-      )}
 
-      {/* DRAWER NOTIFICATIONS */}
-      {showNotifs && (
-        <div style={styles.notifOverlay} onClick={() => { setShowNotifs(false); markAllAsRead(); }}>
-          <div style={styles.notifDrawer} onClick={e => e.stopPropagation()} className="slide-right">
-            <div style={styles.notifHeader}>
-              <h3 style={{margin:0, fontSize: '1.1rem', fontWeight: 800}}>Notifications</h3>
-              <button onClick={() => { setShowNotifs(false); markAllAsRead(); }} style={styles.closeBtn}><X size={20}/></button>
-            </div>
-            <div style={{padding: '10px 20px'}}>
-              {notifications.map(n => (
-                <div key={n.id} style={{...styles.notifItem, opacity: n.read ? 0.6 : 1}}>
-                  <div style={n.read ? styles.dotRead : styles.dotUnread}></div>
-                  <div style={{flex: 1}}>
-                    <p style={styles.nTitle}>{n.title}</p>
-                    <p style={styles.nMsg}>{n.msg}</p>
-                    <p style={styles.nTime}>{n.time}</p>
-                  </div>
+        <div style={styles.container} className="fade-in">
+          
+          {/* TOAST SECURE */}
+          {showToast && (
+            <div style={styles.toastContainer} className="slide-down">
+              <div style={styles.toastContent}>
+                <div style={styles.toastIcon}><CheckCircle size={18} color="white" /></div>
+                <div style={{flex: 1}}>
+                  <p style={styles.toastTitle}>Notification Système</p>
+                  <p style={styles.toastText}>Nouvelle mise à jour de dossier.</p>
                 </div>
+                <button onClick={() => setShowToast(false)} style={styles.toastClose}><X size={14} /></button>
+              </div>
+            </div>
+          )}
+
+          {/* DRAWER NOTIFICATIONS */}
+          {showNotifs && (
+            <div style={styles.notifOverlay} onClick={() => { setShowNotifs(false); markAllAsRead(); }}>
+              <div style={styles.notifDrawer} onClick={e => e.stopPropagation()} className="slide-right">
+                <div style={styles.notifHeader}>
+                  <h3 style={{margin:0, fontSize: '1.1rem', fontWeight: 800}}>Notifications</h3>
+                  <button onClick={() => { setShowNotifs(false); markAllAsRead(); }} style={styles.closeBtn}><X size={20}/></button>
+                </div>
+                <div style={{padding: '10px 20px'}}>
+                  {notifications.map(n => (
+                    <div key={n.id} style={{...styles.notifItem, opacity: n.read ? 0.6 : 1}}>
+                      <div style={n.read ? styles.dotRead : styles.dotUnread}></div>
+                      <div style={{flex: 1}}>
+                        <p style={styles.nTitle}>{n.title}</p>
+                        <p style={styles.nMsg}>{n.msg}</p>
+                        <p style={styles.nTime}>{n.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BANDEAU DE SÉCURITÉ GOUVERNEMENTAL */}
+          <div style={styles.securityBanner}>
+            <ShieldCheck size={14} className="pulse" />
+            <span>AUTHENTIFICATION NATIONALE — SESSION CHIFFRÉE</span>
+            <button onClick={() => setShowNotifs(true)} style={styles.bellBtn}>
+              <Bell size={16} color="#68D391" />
+              {unreadCount > 0 && <span style={styles.redBadge}>{unreadCount}</span>}
+            </button>
+          </div>
+
+          <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
+            <header style={styles.header}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <button onClick={() => navigate('/home')} style={styles.iconBtn} aria-label="Retour">
+                  <ArrowLeft size={20} />
+                </button>
+                <h2 style={styles.mainTitle}>Administration</h2>
+              </div>
+              <button onClick={() => setView('vault')} style={styles.vaultBtn} title="Coffre-fort">
+                <Shield size={20} />
+              </button>
+            </header>
+
+            {/* RECHERCHE */}
+            <div style={styles.searchBox}>
+              <Search size={18} color="#A0AEC0" />
+              <input 
+                type="text" 
+                placeholder="Rechercher un document officiel..." 
+                style={styles.inputNone}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* FILTRES PAR CATÉGORIE */}
+            <div style={styles.scrollX}>
+              {CATEGORIES.map(c => (
+                <button 
+                  key={c} 
+                  onClick={() => setActiveCategory(c)}
+                  style={{
+                    ...styles.chipStyle, 
+                    backgroundColor: activeCategory === c ? '#0056D2' : 'white',
+                    color: activeCategory === c ? 'white' : '#4A5568',
+                    borderColor: activeCategory === c ? '#0056D2' : '#E2E8F0'
+                  }}
+                >
+                  {c}
+                </button>
               ))}
             </div>
+
+            {/* GRILLE DES SERVICES */}
+            <div style={styles.gridServices}>
+              {filteredServices.map((service, index) => (
+                <button 
+                  key={service.id} 
+                  onClick={() => { setSelectedId(service.id); setView('form'); }} 
+                  style={{...styles.cardService, animationDelay: `${index * 0.05}s`}}
+                  className="slide-up"
+                >
+                  <div style={styles.iconCircle}>{service.icon}</div>
+                  <span style={styles.cardText}>{service.title}</span>
+                  <ChevronRight size={14} color="#CBD5E0" style={{marginTop: 'auto'}}/>
+                </button>
+              ))}
+            </div>
+
+            {/* SECTION SUIVI */}
+            <h4 style={styles.sectionLabel}>DOSSIERS EN COURS</h4>
+            <div style={styles.statusCard} onClick={() => setView('vault')} className="status-hover">
+              <div style={styles.indicatorYellow}></div>
+              <div style={{ flex: 1 }}>
+                <p style={styles.statusTitle}>Bulletin N°3</p>
+                <p style={styles.statusSub}>En cours de signature électronique...</p>
+              </div>
+              <span style={styles.timeLabel}>Paiement Reçu</span>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* BANDEAU DE SÉCURITÉ GOUVERNEMENTAL */}
-      <div style={styles.securityBanner}>
-        <ShieldCheck size={14} className="pulse" />
-        <span>AUTHENTIFICATION NATIONALE — SESSION CHIFFRÉE</span>
-        <button onClick={() => setShowNotifs(true)} style={styles.bellBtn}>
-          <Bell size={16} color="#68D391" />
-          {unreadCount > 0 && <span style={styles.redBadge}>{unreadCount}</span>}
-        </button>
-      </div>
-
-      <div style={{ padding: '20px' }}>
-        <header style={styles.header}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <button onClick={() => navigate('/home')} style={styles.iconBtn} aria-label="Retour">
-              <ArrowLeft size={20} />
-            </button>
-            <h2 style={styles.mainTitle}>Administration</h2>
-          </div>
-          <button onClick={() => setView('vault')} style={styles.vaultBtn} title="Coffre-fort">
-            <Shield size={20} />
-          </button>
-        </header>
-
-        {/* RECHERCHE */}
-        <div style={styles.searchBox}>
-          <Search size={18} color="#A0AEC0" />
-          <input 
-            type="text" 
-            placeholder="Rechercher un document officiel..." 
-            style={styles.inputNone}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {/* FILTRES PAR CATÉGORIE */}
-        <div style={styles.scrollX}>
-          {CATEGORIES.map(c => (
-            <button 
-              key={c} 
-              onClick={() => setActiveCategory(c)}
-              style={{
-                ...styles.chipStyle, 
-                backgroundColor: activeCategory === c ? '#0056D2' : 'white',
-                color: activeCategory === c ? 'white' : '#4A5568',
-                borderColor: activeCategory === c ? '#0056D2' : '#E2E8F0'
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
-        {/* GRILLE DES SERVICES */}
-        <div style={styles.gridServices}>
-          {filteredServices.map((service, index) => (
-            <button 
-              key={service.id} 
-              onClick={() => { setSelectedId(service.id); setView('form'); }} 
-              style={{...styles.cardService, animationDelay: `${index * 0.05}s`}}
-              className="slide-up"
-            >
-              <div style={styles.iconCircle}>{service.icon}</div>
-              <span style={styles.cardText}>{service.title}</span>
-              <ChevronRight size={14} color="#CBD5E0" style={{marginTop: 'auto'}}/>
-            </button>
-          ))}
-        </div>
-
-        {/* SECTION SUIVI */}
-        <h4 style={styles.sectionLabel}>DOSSIERS EN COURS</h4>
-        <div style={styles.statusCard} onClick={() => setView('vault')} className="status-hover">
-          <div style={styles.indicatorYellow}></div>
-          <div style={{ flex: 1 }}>
-            <p style={styles.statusTitle}>Bulletin N°3</p>
-            <p style={styles.statusSub}>En cours de signature électronique...</p>
-          </div>
-          <span style={styles.timeLabel}>Paiement Reçu</span>
         </div>
       </div>
 
       <style>{`
+        .app-container { 
+          width: 390px; 
+          height: 844px; 
+          background: #F8FAFC; 
+          position: relative; 
+          overflow: hidden; 
+          display: flex; 
+          flex-direction: column; 
+          box-shadow: 0 0 0 12px #1e293b, 0 30px 70px rgba(0,0,0,0.25); 
+          border-radius: 50px; 
+          border: 4px solid #334155; 
+        }
         .pulse { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .fade-in { animation: fadeIn 0.4s ease-out; }
@@ -206,14 +230,16 @@ const EAdministration = () => {
         .slide-right { animation: slideRight 0.3s ease-out; }
         @keyframes slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .status-hover:active { transform: scale(0.98); background: #F7FAFC; }
+        * { scrollbar-width: none; }
+        *::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );
 };
 
-// --- DESIGN SYSTEM (Professionnel & Réutilisable) ---
+// --- DESIGN SYSTEM (Styles Originaux conservés) ---
 const styles = {
-  container: { backgroundColor: '#F8FAFC', minHeight: '100vh', fontFamily: '"Inter", sans-serif', maxWidth: '450px', margin: '0 auto', position: 'relative', overflowX: 'hidden' },
+  container: { backgroundColor: '#F8FAFC', flex: 1, fontFamily: '"Inter", sans-serif', position: 'relative', overflowX: 'hidden', display: 'flex', flexDirection: 'column' },
   securityBanner: { background: '#111827', color: '#10B981', fontSize: '0.6rem', padding: '10px 15px', textAlign: 'center', fontWeight: '800', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', borderBottom: '1px solid rgba(16,185,129,0.2)' },
   bellBtn: { background: 'none', border: 'none', position: 'relative', cursor: 'pointer', padding: '5px' },
   redBadge: { position: 'absolute', top: '0', right: '0', background: '#EF4444', color: 'white', fontSize: '7px', width: '12px', height: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', border: '1px solid #111827' },
@@ -235,14 +261,14 @@ const styles = {
   statusTitle: { margin: 0, fontSize: '0.85rem', fontWeight: '700', color: '#111827' },
   statusSub: { margin: 0, fontSize: '0.75rem', color: '#64748B' },
   timeLabel: { fontSize: '0.65rem', color: '#10B981', fontWeight: '700', background: '#ECFDF5', padding: '4px 8px', borderRadius: '6px' },
-  toastContainer: { position: 'fixed', top: '20px', left: '0', right: '0', zIndex: 9999, display: 'flex', justifyContent: 'center', padding: '0 20px' },
-  toastContent: { background: '#111827', color: 'white', padding: '12px 18px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', width: '100%', maxWidth: '380px' },
+  toastContainer: { position: 'absolute', top: '55px', left: '0', right: '0', zIndex: 9999, display: 'flex', justifyContent: 'center', padding: '0 20px' },
+  toastContent: { background: '#111827', color: 'white', padding: '12px 18px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', width: '100%' },
   toastIcon: { background: '#10B981', padding: '6px', borderRadius: '8px' },
   toastTitle: { margin: 0, fontSize: '0.8rem', fontWeight: '800' },
   toastText: { margin: 0, fontSize: '0.7rem', color: '#94A3B8' },
   toastClose: { background: 'none', border: 'none', color: '#4B5563', cursor: 'pointer' },
-  notifOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end', backdropFilter: 'blur(2px)' },
-  notifDrawer: { width: '85%', maxWidth: '320px', background: 'white', height: '100%', boxShadow: '-5px 0 30px rgba(0,0,0,0.1)' },
+  notifOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end', backdropFilter: 'blur(2px)' },
+  notifDrawer: { width: '85%', background: 'white', height: '100%', boxShadow: '-5px 0 30px rgba(0,0,0,0.1)' },
   notifHeader: { padding: '25px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9' },
   notifItem: { display: 'flex', gap: '12px', padding: '15px 0', borderBottom: '1px solid #F8FAFC' },
   dotUnread: { width: '8px', height: '8px', background: '#0056D2', borderRadius: '50%', marginTop: '6px' },
@@ -251,6 +277,13 @@ const styles = {
   nMsg: { margin: '2px 0', fontSize: '0.75rem', color: '#4B5563' },
   nTime: { margin: 0, fontSize: '0.65rem', color: '#94A3B8' },
   closeBtn: { background: '#F3F4F6', border: 'none', padding: '8px', borderRadius: '50%', cursor: 'pointer' }
+};
+
+const phoneStyles = {
+  screenWrapper: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#e2e8f0', padding: '20px' },
+  statusBar: { height: '44px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 30px', background: '#111827', color: 'white' },
+  statusTime: { fontWeight: '700', fontSize: '13px' },
+  statusIcons: { display: 'flex', gap: '5px', alignItems: 'center' },
 };
 
 export default EAdministration;

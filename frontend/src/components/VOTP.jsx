@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, ArrowLeft, Loader2, Check, AlertCircle } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Loader2, Check, AlertCircle, Signal, Wifi, Battery } from "lucide-react";
 import axios from "axios";
 
 const VOTP = () => {
@@ -35,46 +35,40 @@ const VOTP = () => {
     }
   };
 
-const handleVerify = async () => {
-  setLoading(true);
-  setError("");
-  try {
-    const response = await axios.post("http://localhost:8081/api/auth/verify-otp", {
-      cin: userCIN,
-      code: otp.join("")
-    });
-
-    if (response.data.success) {
-      const pendingUser = JSON.parse(localStorage.getItem("pending_user"));
-
-      // 1. CRÉATION DU TOKEN (Ce qui manquait !)
-      // Si ton backend renvoie un token, utilise : response.data.token
-      localStorage.setItem("ashel_token", "session_active_" + userCIN); 
-
-      // 2. CRÉATION DE LA SESSION
-      const userSession = {
+  const handleVerify = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.post("http://localhost:8081/api/auth/verify-otp", {
         cin: userCIN,
-        nom: pendingUser?.nom || "Citoyen",
-        isLoggedIn: true
-      };
-      localStorage.setItem("user_ashel", JSON.stringify(userSession));
+        code: otp.join("")
+      });
 
-      // 3. NETTOYAGE
-      localStorage.removeItem("pending_cin");
-      localStorage.removeItem("pending_user");
+      if (response.data.success) {
+        const pendingUser = JSON.parse(localStorage.getItem("pending_user"));
+        localStorage.setItem("ashel_token", "session_active_" + userCIN); 
 
-      setSuccess(true);
-      
-      setTimeout(() => {
-        navigate("/home");
-      }, 1500);
+        const userSession = {
+          cin: userCIN,
+          nom: pendingUser?.nom || "Citoyen",
+          isLoggedIn: true
+        };
+        localStorage.setItem("user_ashel", JSON.stringify(userSession));
+
+        localStorage.removeItem("pending_cin");
+        localStorage.removeItem("pending_user");
+
+        setSuccess(true);
+        setTimeout(() => {
+          navigate("/home");
+        }, 1500);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Code incorrect.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.response?.data?.error || "Code incorrect.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleResend = async () => {
     setResendLoading(true);
@@ -104,175 +98,136 @@ const handleVerify = async () => {
   };
 
   return (
-    <div className="app-container">
-      {/* Bulle SMS simulée pour le nouveau code */}
-      {resendSuccess && (
-        <div className="sms-notification-bubble fade-in">
-          <p className="sms-header">Messages • À l'instant</p>
-          <p className="sms-content">
-            ASHAL : Nouveau code : <strong>{newOtpSimulated}</strong>
-          </p>
-        </div>
-      )}
+    <div className="auth-container dark-theme">
+      <div className="app-container">
+        <div className="moucharabieh-overlay" />
 
-      <div className="moucharabieh-overlay"></div>
-
-      <div
-        style={{
-          padding: "40px 25px",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          zIndex: 2,
-          position: "relative",
-        }}
-      >
-        {/* Bouton retour */}
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            color: "#64748B",
-            fontSize: "0.85rem",
-            fontWeight: "700",
-            marginBottom: "20px",
-          }}
-        >
-          <ArrowLeft size={18} /> Retour
-        </button>
-
-        {/* Titre */}
-        <div style={{ textAlign: "center", marginBottom: "30px" }} className="fade-in">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "72px",
-              height: "72px",
-              background: "#EFF6FF",
-              borderRadius: "24px",
-              marginBottom: "16px",
-              border: "1px solid #BFDBFE",
-            }}
-          >
-            <ShieldCheck size={34} color="#0056D2" />
+        {/* Barre d'état (Style iPhone) */}
+        <div style={styles.statusBar}>
+          <span style={styles.statusTime}>09:41</span>
+          <div style={styles.statusIcons}>
+            <Signal size={13} /> <Wifi size={13} /> <Battery size={15} />
           </div>
-          <h1 style={{ fontSize: "1.8rem", fontWeight: "900" }}>
-            Code <span style={{ color: "#E70011" }}>OTP</span>
-          </h1>
-          <p style={{ fontSize: "0.85rem", color: "#64748B", marginTop: "8px" }}>
-            Saisissez le code reçu pour votre CIN{" "}
-            <strong>{userCIN ? `${userCIN.substring(0, 3)}****` : ""}</strong>
-          </p>
         </div>
 
-        {/* Messages d'état */}
-        {error && (
-          <div className="error-banner fade-in">
-            <AlertCircle size={16} />
-            <span>{error}</span>
+        {/* Bulle SMS simulée */}
+        {resendSuccess && (
+          <div className="sms-notification-bubble fade-in">
+            <p className="sms-header">Messages • À l'instant</p>
+            <p className="sms-content">
+              ASHAL : Nouveau code : <strong>{newOtpSimulated}</strong>
+            </p>
           </div>
         )}
-        {success && (
-          <div
+
+        <div style={styles.scrollArea}>
+          {/* Bouton retour */}
+          <button
+            onClick={() => navigate(-1)}
+            style={styles.backBtn}
+          >
+            <ArrowLeft size={20} color="#1e293b" />
+          </button>
+
+          {/* Titre & Icône */}
+          <div style={{ textAlign: "center", marginBottom: "30px" }} className="fade-in">
+            <div style={styles.stepIcon}>
+              <ShieldCheck size={34} color="#0056D2" />
+            </div>
+            <h1 className="title-text">
+              Code <span style={{ color: "#E70011" }}>OTP</span>
+            </h1>
+            <p className="subtitle-text" style={{ marginTop: "8px" }}>
+              Saisissez le code reçu pour votre CIN{" "}
+              <strong>{userCIN ? `${userCIN.substring(0, 3)}****` : ""}</strong>
+            </p>
+          </div>
+
+          {/* Erreurs et Succès */}
+          {error && (
+            <div style={styles.errorBanner} className="fade-in">
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+          {success && (
+            <div style={styles.successBanner} className="fade-in">
+              <Check size={16} /> Vérification réussie ! Redirection...
+            </div>
+          )}
+
+          {/* Champs OTP */}
+          <div style={styles.otpGrid}>
+            {otp.map((data, index) => (
+              <input
+                key={index}
+                type="text"
+                maxLength="1"
+                ref={(el) => (inputRefs.current[index] = el)}
+                value={data}
+                onChange={(e) => handleChange(e.target, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                style={{
+                  ...styles.otpInput,
+                  border: data ? "2px solid #0056D2" : "2px solid #E2E8F0",
+                  background: data ? "#EFF6FF" : "#F8FAFC",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Bouton vérifier */}
+          <button
+            onClick={handleVerify}
+            disabled={loading || success}
+            className="btn-primary-ashel"
             style={{
-              background: "#f0fdf4",
-              color: "#15803d",
-              padding: "12px",
-              borderRadius: "12px",
-              marginBottom: "15px",
+              opacity: loading || success ? 0.7 : 1,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
-              gap: "8px",
             }}
-            className="fade-in"
           >
-            <Check size={16} /> Vérification réussie ! Redirection...
-          </div>
-        )}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "VÉRIFIER LE CODE"}
+          </button>
 
-        {/* Champs OTP */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "10px",
-            marginBottom: "28px",
-          }}
-        >
-          {otp.map((data, index) => (
-            <input
-              key={index}
-              type="text"
-              maxLength="1"
-              ref={(el) => (inputRefs.current[index] = el)}
-              value={data}
-              onChange={(e) => handleChange(e.target, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
+          {/* Renvoyer le code */}
+          <div style={{ textAlign: "center", marginTop: "24px", fontSize: "0.85rem", color: "#64748B" }}>
+            Vous n'avez pas reçu le code ?{" "}
+            <span
+              onClick={!resendLoading && !success ? handleResend : undefined}
               style={{
-                width: "46px",
-                height: "58px",
-                textAlign: "center",
-                fontSize: "1.4rem",
-                fontWeight: "900",
-                border: data ? "2px solid #0056D2" : "2px solid #E2E8F0",
-                borderRadius: "16px",
-                background: data ? "#EFF6FF" : "#F8FAFC",
-                outline: "none",
-                transition: "border 0.2s, background 0.2s",
+                color: resendLoading || success ? "#94a3b8" : "#0056D2",
+                fontWeight: "800",
+                cursor: resendLoading || success ? "default" : "pointer",
               }}
-            />
-          ))}
-        </div>
-
-        {/* Bouton vérifier */}
-        <button
-          onClick={handleVerify}
-          disabled={loading || success}
-          className="btn-ashal-primary"
-          style={{
-            opacity: loading || success ? 0.7 : 1,
-            cursor: loading || success ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? <Loader2 className="animate-spin" size={20} /> : "VÉRIFIER LE CODE"}
-        </button>
-
-        {/* Renvoyer le code */}
-        <div style={{ textAlign: "center", marginTop: "24px", fontSize: "0.85rem" }}>
-          Vous n'avez pas reçu le code ?{" "}
-          <span
-            onClick={!resendLoading && !success ? handleResend : undefined}
-            style={{
-              color: resendLoading || success ? "#94a3b8" : "#0056D2",
-              fontWeight: "800",
-              cursor: resendLoading || success ? "default" : "pointer",
-            }}
-          >
-            {resendLoading ? "Envoi..." : "Renvoyer"}
-          </span>
+            >
+              {resendLoading ? "Envoi..." : "Renvoyer"}
+            </span>
+          </div>
         </div>
       </div>
 
       <style>{`
+        .auth-container.dark-theme { background: #f1f5f9; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .app-container { width: 390px; height: 844px; background: #ffffff; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 12px #1e293b, 0 30px 70px rgba(0,0,0,0.25); border-radius: 50px; border: 4px solid #334155; }
+        .moucharabieh-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url("https://www.transparenttextures.com/patterns/arabesque.png"); opacity: 0.02; pointer-events: none; }
+        
+        .title-text { font-size: 1.8rem; font-weight: 900; color: #1e293b; }
+        .subtitle-text { font-size: 0.85rem; color: #64748b; line-height: 1.5; }
+        
+        .btn-primary-ashel { width: 100%; padding: 16px; border-radius: 16px; border: none; background: #1e293b; color: white; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-primary-ashel:hover { background: #0056D2; }
+
         .sms-notification-bubble {
-          position: absolute; top: 15px; left: 15px; right: 15px;
+          position: absolute; top: 55px; left: 15px; right: 15px;
           background: white; padding: 15px; border-radius: 20px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1000;
           border-left: 5px solid #E70011;
         }
-        .sms-header { margin: 0; font-size: 0.65rem; font-weight: 900; color: #E70011; }
+        .sms-header { margin: 0; font-size: 0.65rem; font-weight: 900; color: #E70011; text-transform: uppercase; }
         .sms-content { margin: 4px 0 0; font-size: 0.8rem; color: #1e293b; }
-        .error-banner {
-          background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 12px;
-          display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin-bottom: 15px;
-        }
+
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .fade-in { animation: fadeIn 0.4s ease-out; }
@@ -280,6 +235,19 @@ const handleVerify = async () => {
       `}</style>
     </div>
   );
+};
+
+const styles = {
+  statusBar: { height: '44px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 30px', color: '#64748b', zIndex: 10 },
+  statusTime: { fontWeight: '700', fontSize: '13px', color: '#1e293b' },
+  statusIcons: { display: 'flex', gap: '5px', alignItems: 'center' },
+  scrollArea: { flex: 1, overflowY: 'auto', padding: '10px 24px 24px', zIndex: 2, position: 'relative' },
+  backBtn: { width: '36px', height: '36px', borderRadius: '50%', background: '#f1f5f9', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: '20px' },
+  stepIcon: { width: '72px', height: '72px', borderRadius: '24px', background: '#EFF6FF', border: '1px solid #BFDBFE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
+  otpGrid: { display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "28px" },
+  otpInput: { width: "42px", height: "58px", textAlign: "center", fontSize: "1.4rem", fontWeight: "900", borderRadius: "16px", outline: "none", transition: "0.2s" },
+  errorBanner: { background: "#fef2f2", color: "#b91c1c", padding: "12px", borderRadius: "12px", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", marginBottom: "15px", fontWeight: "600" },
+  successBanner: { background: "#f0fdf4", color: "#15803d", padding: "12px", borderRadius: "12px", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", marginBottom: "15px", fontWeight: "600" }
 };
 
 export default VOTP;

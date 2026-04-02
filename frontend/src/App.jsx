@@ -12,6 +12,12 @@ import WorkCertificateForm from './components/WorkCertificateForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import PaiementAmende from './components/PaiementAmende'; 
+import PaymentHub from './components/Paymenthub';
+import FacturePage from './components/Facturepage';
+import PaiementFacture from './components/PaiementFacture';
+import FactureDetail from './components/FactureDetail';
+
+import Profil from './components/Profiltemp'; // <--- AJOUT DE L'IMPORT
 
 // CORRECTION : On pointe vers le nom réel du fichier "VOTP"
 import VerifyOTP from "./components/VOTP"; 
@@ -59,7 +65,6 @@ const GlobalChatbot = () => {
             <X size={20} onClick={() => setIsOpen(false)} style={{cursor:'pointer'}} />
           </div>
           <div style={{flex: 1, overflow: 'hidden', backgroundColor: '#F8FAFC'}}>
-             {/* Le composant SupportAide sert d'interface au bot */}
              <SupportAide onBack={() => setIsOpen(false)} isEmbedded={true} />
           </div>
         </div>
@@ -85,32 +90,41 @@ const GlobalChatbot = () => {
 function App() {
   return (
     <Router>
-      {/* Le Chatbot est placé ici pour surveiller les changements de routes */}
       <GlobalChatbot /> 
 
       <Routes>
-        {/* Authentification */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
+  {/* Authentification */}
+  <Route path="/" element={<Login />} />
+  <Route path="/register" element={<Register />} />
+  <Route path="/verify-otp" element={<VerifyOTP />} />
 
-        {/* Accueil */}
-        <Route path="/home" element={<Home />} />        
-        {/* Services E-Administration */}
-        <Route path="/e-admin" element={<EAdministration />} />
-        <Route path="/birth-certification" element={<BirthCertificationForm />} />
-        <Route path="/bulletin-b3" element={<BulletinB3Form />} />
-        <Route path="/work-certificate" element={<WorkCertificateForm />} />
-        
-        {/* Services E-Amende */}
-        <Route path="/e-amende" element={<EAmende />} />
-        <Route path="/paiement-amende" element={<PaiementAmende />} />
+  {/* Accueil & Profil */}
+  <Route path="/home" element={<Home />} />        
+  <Route path="/profil" element={<Profil />} />
 
-        {/* Services GovTech / Citoyenneté */}
-        <Route path="/signalement" element={<Signalement />} />
-        <Route path="/evaluation" element={<Evaluation />} />
-        <Route path="/reclamation" element={<Reclamation />} />
-      </Routes>
+  {/* Services E-Administration */}
+  <Route path="/e-admin" element={<EAdministration />} />
+  <Route path="/birth-certification" element={<BirthCertificationForm />} />
+  <Route path="/bulletin-b3" element={<BulletinB3Form />} />
+  <Route path="/work-certificate" element={<WorkCertificateForm />} />
+  
+  {/* Services E-Amende */}
+  <Route path="/e-amende" element={<EAmende />} />
+  <Route path="/paiement-amende" element={<PaiementAmende />} />
+
+  {/* Hub Paiements & Factures */}
+  <Route path="/paiement" element={<PaymentHub />} />
+  <Route path="/facture/:id" element={<FactureDetail />} /> {/* Détail de la facture (Design Papier) */}
+  
+  {/* Ces deux routes sont utiles si tu as gardé l'ancien système de paiement direct */}
+  <Route path="/paiement-facture/:type" element={<FacturePage />} />
+  <Route path="/paiement-facture/:type/payer" element={<PaiementFacture />} />
+
+  {/* Services GovTech / Citoyenneté */}
+  <Route path="/signalement" element={<Signalement />} />
+  <Route path="/evaluation" element={<Evaluation />} />
+  <Route path="/reclamation" element={<Reclamation />} />
+</Routes>
 
       {/* Animations CSS injectées */}
       <style>{`
