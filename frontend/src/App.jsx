@@ -9,6 +9,8 @@ import VerifyOTP from './components/verifyotp';
 import Signalement from './components/Signalement';
 import Evaluation from './components/Evaluation';
 import Reclamation from './components/Reclamation';
+import SignalementList from './components/SignalementList';
+import AdminDashboard from './components/AdminDashboard';
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route path="/signalement" element={<Signalement />} />
         <Route path="/evaluation" element={<Evaluation />} />
         <Route path="/reclamation" element={<Reclamation />} />
+        <Route path="/mes-signalements" element={<SignalementList />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
