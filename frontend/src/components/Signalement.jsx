@@ -77,7 +77,7 @@ const Signalement = () => {
         formData.append('photos', photo);
       });
 
-      const response = await fetch('http://localhost:8080/api/signalements', {
+      const response = await fetch('http://localhost:8081/api/signalements', {
         method: 'POST',
         body: formData,
         // PAS de Content-Type ici — le navigateur le met automatiquement

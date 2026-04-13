@@ -20,7 +20,7 @@ const Reclamation = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/reclamations', {
+      const response = await fetch('http://localhost:8081/api/reclamations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, citoyenId: 1 }),
