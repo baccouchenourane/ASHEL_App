@@ -60,7 +60,13 @@ const PaymentHub = () => {
         {/* Liste des Factures (Design Carreaux) */}
         <div style={styles.listContent}>
           {filtered.map((p) => (
-            <div key={p.id} onClick={() => navigate(`/facture/${p.id}`)} style={styles.card}>
+            <div key={p.id} onClick={() => {
+  if (p.id === 'radar') {
+    navigate('/paiement-amende'); // Route vers ton fichier PaiementAmende.jsx
+  } else {
+    navigate(`/facture/${p.id}`); // Reste sur le détail facture pour le reste
+  }
+}} style={styles.card}>
               <div style={{ ...styles.iconBox, background: `${p.color}15`, color: p.color }}>{p.icon}</div>
               <div style={{ flex: 1 }}>
                 <p style={styles.cardOrg}>{p.org}</p>

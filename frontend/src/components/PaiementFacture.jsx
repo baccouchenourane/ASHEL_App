@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ShieldCheck, Lock, CreditCard,
   CheckCircle2, Zap, Droplets, Wifi, ShieldAlert, GraduationCap,
   Building2, Banknote, Smartphone, Check
 } from 'lucide-react';
+import { paiementAPI, getCin } from '../services/api';
 
-// ─── CONFIG FACTURES ─────────────────────────────────────────────────────────
+// ─── CONFIG FACTURES (pour l'affichage) ─────────────────────────────────────
 const factureInfo = {
-  electricite: { label: 'Facture STEG',           montant: '85.500', color: '#f59e0b', Icon: Zap },
-  eau:         { label: 'Facture SONEDE',          montant: '42.200', color: '#0ea5e9', Icon: Droplets },
-  wifi:        { label: 'Facture Tunisie Telecom', montant: '39.000', color: '#8b5cf6', Icon: Wifi },
-  etude:       { label: "Frais d'Inscription",     montant: '12.500', color: '#8b5cf6', Icon: GraduationCap },
-  amende:      { label: 'Amende PV-2026-88',       montant: '60.000', color: '#e11d48', Icon: ShieldAlert },
+  electricite: { label: 'Facture STEG', color: '#f59e0b', Icon: Zap },
+  eau:         { label: 'Facture SONEDE', color: '#0ea5e9', Icon: Droplets },
+  wifi:        { label: 'Facture Tunisie Telecom', color: '#8b5cf6', Icon: Wifi },
+  etude:       { label: "Frais d'Inscription", color: '#8b5cf6', Icon: GraduationCap },
+  amende:      { label: 'Amende', color: '#e11d48', Icon: ShieldAlert },
 };
 
 // ─── MÉTHODES DE PAIEMENT ─────────────────────────────────────────────────────
@@ -32,22 +33,122 @@ const PaiementFacture = () => {
   const [methode, setMethode]       = useState(null);
   const [loading, setLoading]       = useState(false);
   const [success, setSuccess]       = useState(false);
+  const [error, setError]           = useState('');
+  const [recu, setRecu]             = useState(null);
+  const [facture, setFacture]       = useState(null); // Stocker la vraie facture du backend
+  const [chargementFacture, setChargementFacture] = useState(true);
+  
+  // États pour les formulaires
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry]         = useState('');
   const [cvv, setCvv]               = useState('');
   const [phone, setPhone]           = useState('');
   const [rib, setRib]               = useState('');
 
-  const handlePay = (e) => {
-    e.preventDefault();
+  // Charger la facture depuis le backend au chargement
+  useEffect(() => {
+    const chargerFacture = async () => {
+      const cin = getCin();
+      if (!cin) {
+        navigate('/');
+        return;
+      }
+
+      try {
+        setChargementFacture(true);
+        // Récupérer les factures de l'utilisateur
+        const factures = await paiementAPI.getFactures(cin);
+        
+        // Trouver une facture du type correspondant
+        let factureTrouvee = null;
+        
+        // Mapping des types frontend vers backend
+        const typeMapping = {
+          electricite: 'ELECTRICITE',
+          eau: 'EAU',
+          wifi: 'INTERNET',
+          etude: 'ETUDE',
+          amende: 'AMENDE'
+        };
+        
+        const backendType = typeMapping[type] || type.toUpperCase();
+        
+        // Chercher une facture non payée du bon type
+        factureTrouvee = factures.find(
+          f => f.type === backendType && f.statut !== 'PAYEE'
+        );
+        
+        if (factureTrouvee) {
+          setFacture(factureTrouvee);
+        } else {
+          setError(`Aucune facture ${config.label} trouvée à payer`);
+        }
+      } catch (err) {
+        console.error('Erreur chargement facture:', err);
+        setError('Impossible de charger les factures');
+      } finally {
+        setChargementFacture(false);
+      }
+    };
+
+    chargerFacture();
+  }, [type, navigate, config.label]);
+
+const handlePay = async () => {
+    if (cardNumber.length < 19 || cardHolder.trim() === '' || expiry.length < 5 || cvv.length < 3) {
+      alert('Veuillez remplir correctement les informations de votre carte.');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      // Nettoyage du montant pour le transformer en Double Java
+      const montantNumerique = parseFloat(facture.total);
+      const methode = paymentType.toUpperCase();
+
+      // ÉTAPE A : Initier le paiement
+      const initiation = await paiementAPI.initierPaiement(
+        facture.ref,
+        methode,
+        montantNumerique
+      );
+
+      // ÉTAPE B : Confirmer le paiement
+      await paiementAPI.confirmerPaiement(initiation.numeroTransaction);
+
+      setStep('success');
+
+    } catch (err) {
+      // GESTION SPÉCIFIQUE : Si la facture est déjà payée, on traite ça comme un succès
+      if (err.message.includes("déjà effectué") || err.message.includes("déjà payée")) {
+        setStep('success');
+      } else {
+        console.error("Erreur de paiement:", err);
+        alert(err.message || "Le paiement a échoué.");
+      }
+    } finally {
       setLoading(false);
-      setSuccess(true);
-    }, 2500);
+    }
   };
 
-  if (success) return <SuccessView navigate={navigate} label={config.label} />;
+  // Affichage du chargement
+  if (chargementFacture) {
+    return (
+      <div style={wrapper}>
+        <div className="app-container" style={{ background: '#f4f7fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
+            <p>Chargement de la facture...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (success && recu) {
+    return <SuccessView navigate={navigate} recu={recu} label={config.label} />;
+  }
 
   return (
     <div style={wrapper}>
@@ -69,16 +170,28 @@ const PaiementFacture = () => {
         {/* ZONE SCROLLABLE */}
         <div className="page-content" style={{ padding: '20px', paddingBottom: '40px' }}>
 
-          {/* MONTANT */}
+          {/* MONTANT - Utiliser les vraies données */}
           <div style={{ textAlign: 'center', margin: '20px 0 28px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
               <config.Icon size={16} color={config.color} />
               <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0, fontWeight: '700' }}>{config.label}</p>
             </div>
             <h1 style={{ fontSize: '2.6rem', fontWeight: '900', color: '#1e293b', margin: 0 }}>
-              {config.montant} <span style={{ fontSize: '1rem', fontWeight: '600' }}>DT</span>
+              {facture ? facture.montant.toFixed(3) : '0.000'} <span style={{ fontSize: '1rem', fontWeight: '600' }}>DT</span>
             </h1>
+            {facture && (
+              <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '8px' }}>
+                Réf: {facture.reference}
+              </p>
+            )}
           </div>
+
+          {/* AFFICHAGE ERREUR */}
+          {error && (
+            <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '14px', padding: '12px', marginBottom: '20px' }}>
+              <p style={{ margin: 0, color: '#dc2626', fontSize: '0.8rem', fontWeight: '600' }}>{error}</p>
+            </div>
+          )}
 
           {/* SÉLECTION MÉTHODE */}
           <h4 style={s.sectionTitle}>CHOISIR UN MOYEN DE PAIEMENT</h4>
@@ -89,7 +202,10 @@ const PaiementFacture = () => {
               return (
                 <div
                   key={m.id}
-                  onClick={() => setMethode(m.id)}
+                  onClick={() => {
+                    setMethode(m.id);
+                    setError('');
+                  }}
                   style={{
                     ...s.methodeCard,
                     border: isSelected ? `2px solid ${m.color}` : '2px solid #e2e8f0',
@@ -129,10 +245,10 @@ const PaiementFacture = () => {
             <FormulaireEDinar phone={phone} setPhone={setPhone} loading={loading} handlePay={handlePay} />
           )}
           {methode === 'virement' && (
-            <FormulaireVirement rib={rib} setRib={setRib} loading={loading} handlePay={handlePay} montant={config.montant} />
+            <FormulaireVirement rib={rib} setRib={setRib} loading={loading} handlePay={handlePay} montant={facture?.montant || 0} />
           )}
           {methode === 'poste' && (
-            <FormulairePoste loading={loading} handlePay={handlePay} montant={config.montant} />
+            <FormulairePoste loading={loading} handlePay={handlePay} montant={facture?.montant || 0} />
           )}
 
           {/* LOGOS */}
@@ -157,7 +273,7 @@ const PaiementFacture = () => {
           opacity: 0.02; pointer-events: none; z-index: 0;
         }
         .page-content { flex: 1; overflow-y: auto; position: relative; z-index: 1; }
-        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        .spinner { width: 20px; height: 20px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #0056D2; animation: spin 0.8s linear infinite; margin: 0 auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
@@ -205,7 +321,7 @@ const FormulaireCarte = ({ cardNumber, setCardNumber, expiry, setExpiry, cvv, se
       </div>
     </div>
     <button type="submit" disabled={loading} style={s.payBtn}>
-      {loading ? <div className="spinner" /> : <><Lock size={16} /> CONFIRMER LE PAIEMENT</>}
+      {loading ? <div className="spinner" style={{ borderTopColor: 'white' }} /> : <><Lock size={16} /> CONFIRMER LE PAIEMENT</>}
     </button>
   </form>
 );
@@ -230,7 +346,7 @@ const FormulaireEDinar = ({ phone, setPhone, loading, handlePay }) => (
       <input type="password" placeholder="••••" maxLength="4" style={s.input} required />
     </div>
     <button type="submit" disabled={loading} style={{ ...s.payBtn, background: '#8b5cf6', boxShadow: '0 10px 15px -3px rgba(139,92,246,0.3)' }}>
-      {loading ? <div className="spinner" /> : <><Lock size={16} /> PAYER AVEC E-DINAR</>}
+      {loading ? <div className="spinner" style={{ borderTopColor: 'white' }} /> : <><Lock size={16} /> PAYER AVEC E-DINAR</>}
     </button>
   </form>
 );
@@ -251,7 +367,7 @@ const FormulaireVirement = ({ rib, setRib, loading, handlePay, montant }) => (
     </div>
     <div>
       <label style={s.label}>Montant à virer</label>
-      <input type="text" value={`${montant} DT`} style={{ ...s.input, background: '#f8fafc', color: '#64748b' }} readOnly />
+      <input type="text" value={`${montant.toFixed(3)} DT`} style={{ ...s.input, background: '#f8fafc', color: '#64748b' }} readOnly />
     </div>
     <div>
       <label style={s.label}>Votre RIB (banque source)</label>
@@ -259,7 +375,7 @@ const FormulaireVirement = ({ rib, setRib, loading, handlePay, montant }) => (
         value={rib} onChange={(e) => setRib(e.target.value)} style={s.input} required />
     </div>
     <button type="submit" disabled={loading} style={{ ...s.payBtn, background: '#059669', boxShadow: '0 10px 15px -3px rgba(5,150,105,0.3)' }}>
-      {loading ? <div className="spinner" /> : <><Check size={16} /> CONFIRMER LE VIREMENT</>}
+      {loading ? <div className="spinner" style={{ borderTopColor: 'white' }} /> : <><Check size={16} /> CONFIRMER LE VIREMENT</>}
     </button>
   </form>
 );
@@ -279,7 +395,7 @@ const FormulairePoste = ({ loading, handlePay, montant }) => (
       <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontSize: '0.75rem', color: '#64748b' }}>
         <div>
           <p style={{ margin: 0, fontSize: '0.55rem', color: '#94a3b8', fontWeight: '800' }}>MONTANT</p>
-          <p style={{ margin: 0, fontWeight: '900', color: '#ea580c' }}>{montant} DT</p>
+          <p style={{ margin: 0, fontWeight: '900', color: '#ea580c' }}>{montant.toFixed(3)} DT</p>
         </div>
         <div>
           <p style={{ margin: 0, fontSize: '0.55rem', color: '#94a3b8', fontWeight: '800' }}>EXPIRE LE</p>
@@ -292,13 +408,13 @@ const FormulairePoste = ({ loading, handlePay, montant }) => (
       <input type="text" placeholder="XXXXXXXX Clé XX" style={s.input} />
     </div>
     <button type="submit" disabled={loading} style={{ ...s.payBtn, background: '#ea580c', boxShadow: '0 10px 15px -3px rgba(234,88,12,0.3)' }}>
-      {loading ? <div className="spinner" /> : <><CheckCircle2 size={16} /> GÉNÉRER LE REÇU DE PAIEMENT</>}
+      {loading ? <div className="spinner" style={{ borderTopColor: 'white' }} /> : <><CheckCircle2 size={16} /> GÉNÉRER LE REÇU DE PAIEMENT</>}
     </button>
   </form>
 );
 
-// ─── PAGE SUCCÈS ──────────────────────────────────────────────────────────────
-const SuccessView = ({ navigate, label }) => (
+// ─── PAGE SUCCÈS ─────────────────────────────────────────────────────────────
+const SuccessView = ({ navigate, recu, label }) => (
   <div style={wrapper}>
     <div className="app-container" style={{ background: 'white' }}>
       <div className="moucharabieh-overlay" />
@@ -308,6 +424,18 @@ const SuccessView = ({ navigate, label }) => (
         </div>
         <h1 style={{ fontWeight: '900', color: '#1e293b', marginBottom: '8px' }}>Paiement Terminé !</h1>
         <p style={{ color: '#64748b', marginBottom: '6px', fontWeight: '700' }}>{label} réglée avec succès.</p>
+        
+        {/* Affichage des infos du reçu */}
+        {recu && (
+          <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', margin: '20px 0', width: '100%', textAlign: 'left' }}>
+            <p style={{ margin: '5px 0', fontSize: '0.75rem' }}><strong>Transaction:</strong> {recu.numeroTransaction}</p>
+            <p style={{ margin: '5px 0', fontSize: '0.75rem' }}><strong>Référence facture:</strong> {recu.referenceFacture}</p>
+            <p style={{ margin: '5px 0', fontSize: '0.75rem' }}><strong>Montant:</strong> {recu.montant} DT</p>
+            <p style={{ margin: '5px 0', fontSize: '0.75rem' }}><strong>Méthode:</strong> {recu.methodePaiement}</p>
+            <p style={{ margin: '5px 0', fontSize: '0.75rem' }}><strong>Date:</strong> {new Date(recu.datePaiement).toLocaleString()}</p>
+          </div>
+        )}
+        
         <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '40px' }}>Votre transaction a été approuvée par Monétique Tunisie.</p>
         <button onClick={() => navigate('/paiement')} className="btn-ashal-primary" style={{ maxWidth: '300px', width: '100%' }}>
           RETOUR AUX PAIEMENTS
