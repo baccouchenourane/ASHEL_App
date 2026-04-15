@@ -4,6 +4,8 @@ import {
   CheckCircle, Clock, Search, Signal, Wifi, Battery, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { documentAPI } from '../services/api';
+// Importation du contexte local
+import { useVault } from './VaultContext'; 
 
 // Correspondance typeDocument → catégorie
 const getCat = (typeDoc) => ({
@@ -34,12 +36,15 @@ const getStatutLabel = (statut) => ({
 }[statut] || statut);
 
 const DocumentVault = ({ onBack }) => {
-  const [docs, setDocs] = useState([]);
+  const [backendDocs, setBackendDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [downloading, setDownloading] = useState(null);
   const [progress, setProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Récupération des documents locaux via le context
+  const { docs: localDocs } = useVault();
 
   // --- Chargement des documents depuis le backend ---
   const loadDocs = async () => {
@@ -47,21 +52,7 @@ const DocumentVault = ({ onBack }) => {
     setFetchError('');
     try {
       const data = await documentAPI.getCoffreFort();
-      // Adapter le format backend → format attendu par le composant
-      const formatted = data.map(d => ({
-        id: d.id,
-        name: d.typeDocument,
-        date: (d.statut === 'PRET' || d.statut === 'PAIEMENT_RECU')
-          ? new Date(d.dateMAJ).toLocaleDateString('fr-FR')
-          : 'En traitement...',
-        status: getStatutLabel(d.statut),
-        statutRaw: d.statut,
-        color: getColor(d.statut),
-        cat: getCat(d.typeDocument),
-        reference: d.reference,
-        nomTitulaire: d.nomTitulaire,
-      }));
-      setDocs(formatted);
+      setBackendDocs(data);
     } catch (err) {
       setFetchError(err.message || 'Impossible de charger vos documents.');
     } finally {
@@ -88,7 +79,22 @@ const DocumentVault = ({ onBack }) => {
     }, 150);
   };
 
-  const filteredDocs = docs.filter(doc => 
+  // Fusion des docs locaux et backend + Formatage
+  const allFormattedDocs = [...localDocs, ...backendDocs].map(d => ({
+    id: d.id,
+    name: d.typeDocument,
+    date: (d.statut === 'PRET' || d.statut === 'PAIEMENT_RECU')
+      ? new Date(d.dateMAJ).toLocaleDateString('fr-FR')
+      : 'En traitement...',
+    status: getStatutLabel(d.statut),
+    statutRaw: d.statut,
+    color: getColor(d.statut),
+    cat: getCat(d.typeDocument),
+    reference: d.reference,
+    nomTitulaire: d.nomTitulaire,
+  }));
+
+  const filteredDocs = allFormattedDocs.filter(doc => 
     doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     doc.cat.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (doc.reference && doc.reference.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -163,7 +169,7 @@ const DocumentVault = ({ onBack }) => {
             )}
 
             {/* Liste vide */}
-            {!loading && !fetchError && docs.length === 0 && (
+            {!loading && !fetchError && allFormattedDocs.length === 0 && (
               <div style={{ textAlign: 'center', marginTop: '50px', color: '#94A3B8' }}>
                 <Shield size={40} style={{ marginBottom: '10px', opacity: 0.3 }} />
                 <p style={{ fontWeight: '700' }}>Aucun document pour le moment</p>
@@ -172,7 +178,7 @@ const DocumentVault = ({ onBack }) => {
             )}
 
             {/* Résultats de recherche vides */}
-            {!loading && !fetchError && docs.length > 0 && filteredDocs.length === 0 && (
+            {!loading && !fetchError && allFormattedDocs.length > 0 && filteredDocs.length === 0 && (
               <div style={{ textAlign: 'center', marginTop: '50px', color: '#94A3B8' }}>
                 <Search size={40} style={{ marginBottom: '10px', opacity: 0.5 }} />
                 <p>Aucun document trouvé pour "{searchTerm}"</p>
