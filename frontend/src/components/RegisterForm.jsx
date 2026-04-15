@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Briefcase, Building2, User, Phone, Mail, MapPin, FileText, CheckCircle, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { documentAPI } from '../services/api';
 
 const RegisterForm = ({ onBack }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dossierRef, setDossierRef] = useState('');
   const [form, setForm] = useState({
     raisonSociale: '',
     formeJuridique: '',
@@ -43,19 +45,32 @@ const RegisterForm = ({ onBack }) => {
       setError('Veuillez remplir tous les champs obligatoires.');
       return;
     }
+    if (form.cin.length !== 8 || !/^\d+$/.test(form.cin)) {
+      setError('Le CIN doit comporter exactement 8 chiffres.');
+      return;
+    }
     setError('');
     setStep(3);
   };
 
+  // --- SOUMISSION FINALE AVEC APPEL BACKEND ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.adresse || !form.gouvernorat) {
+      setError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
     setLoading(true);
     setError('');
-    // Simulation d'un appel API
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const demande = await documentAPI.soumettreRegistreCommerce(form);
+      setDossierRef(demande.reference);
       setStep(4);
-    }, 2000);
+    } catch (err) {
+      setError('Erreur lors de la soumission : ' + (err.message || 'Veuillez réessayer.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalSteps = 3;
@@ -65,7 +80,11 @@ const RegisterForm = ({ onBack }) => {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backBtn} aria-label="Retour">
+        <button
+          onClick={step <= 1 ? onBack : () => { setStep(step - 1); setError(''); }}
+          style={styles.backBtn}
+          aria-label="Retour"
+        >
           <ArrowLeft size={20} color="#1e293b" />
         </button>
         <div style={styles.headerTitle}>
@@ -104,14 +123,8 @@ const RegisterForm = ({ onBack }) => {
               <label style={styles.label}>Raison Sociale *</label>
               <div style={styles.inputBox}>
                 <Building2 size={16} color="#94a3b8" style={styles.inputIcon} />
-                <input
-                  style={styles.input}
-                  type="text"
-                  placeholder="Ex : TECH SOLUTIONS SARL"
-                  value={form.raisonSociale}
-                  onChange={handleChange('raisonSociale')}
-                  required
-                />
+                <input style={styles.input} type="text" placeholder="Ex : TECH SOLUTIONS SARL"
+                  value={form.raisonSociale} onChange={handleChange('raisonSociale')} required />
               </div>
 
               <label style={styles.label}>Forme Juridique *</label>
@@ -126,27 +139,15 @@ const RegisterForm = ({ onBack }) => {
               <label style={styles.label}>Activité Principale *</label>
               <div style={styles.inputBox}>
                 <Briefcase size={16} color="#94a3b8" style={styles.inputIcon} />
-                <input
-                  style={styles.input}
-                  type="text"
-                  placeholder="Ex : Commerce de détail informatique"
-                  value={form.activite}
-                  onChange={handleChange('activite')}
-                  required
-                />
+                <input style={styles.input} type="text" placeholder="Ex : Commerce de détail informatique"
+                  value={form.activite} onChange={handleChange('activite')} required />
               </div>
 
               <label style={styles.label}>Capital Social (TND)</label>
               <div style={styles.inputBox}>
                 <span style={{ ...styles.inputIcon, fontSize: '13px', fontWeight: '800', color: '#94a3b8' }}>TND</span>
-                <input
-                  style={{ ...styles.input, paddingLeft: '52px' }}
-                  type="number"
-                  placeholder="Ex : 1000"
-                  value={form.capital}
-                  onChange={handleChange('capital')}
-                  min="0"
-                />
+                <input style={{ ...styles.input, paddingLeft: '52px' }} type="number" placeholder="Ex : 1000"
+                  value={form.capital} onChange={handleChange('capital')} min="0" />
               </div>
 
               <button type="submit" style={styles.btnPrimary}>
@@ -216,7 +217,8 @@ const RegisterForm = ({ onBack }) => {
               <label style={styles.label}>Adresse *</label>
               <div style={styles.inputBox}>
                 <MapPin size={16} color="#94a3b8" style={styles.inputIcon} />
-                <input style={styles.input} type="text" placeholder="Rue, Numéro, Cité..." value={form.adresse} onChange={handleChange('adresse')} required />
+                <input style={styles.input} type="text" placeholder="Rue, Numéro, Cité..."
+                  value={form.adresse} onChange={handleChange('adresse')} required />
               </div>
 
               <label style={styles.label}>Gouvernorat *</label>
@@ -238,7 +240,10 @@ const RegisterForm = ({ onBack }) => {
               </div>
 
               <button type="submit" style={styles.btnPrimary} disabled={loading}>
-                {loading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <>Soumettre la demande <ChevronRight size={16} /></>}
+                {loading
+                  ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                  : <>Soumettre la demande <ChevronRight size={16} /></>
+                }
               </button>
             </form>
           </div>
@@ -257,7 +262,7 @@ const RegisterForm = ({ onBack }) => {
             </p>
             <div style={styles.refBox}>
               <span style={styles.refLabel}>Numéro de dossier</span>
-              <span style={styles.refNum}>RNE-{Date.now().toString().slice(-8)}</span>
+              <span style={styles.refNum}>{dossierRef}</span>
             </div>
             <button onClick={onBack} style={{ ...styles.btnPrimary, marginTop: '24px', background: '#F1F5F9', color: '#1e293b' }}>
               Retour aux services
