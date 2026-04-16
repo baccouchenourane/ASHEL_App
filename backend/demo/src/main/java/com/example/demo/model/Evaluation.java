@@ -1,10 +1,17 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 @Entity
-@Table(name = "evaluation")
+@Table(name = "evaluations")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Evaluation {
 
     @Id
@@ -12,27 +19,17 @@ public class Evaluation {
     private Long id;
 
     @Column(nullable = false)
-    private int note;
+    private Integer note;        // entre 1 et 5
 
-    @Column(columnDefinition = "TEXT")
     private String commentaire;
 
-    @Column(nullable = false)
+    @Column(name = "service_public", nullable = false)
     private String servicePublic;
 
+    @Column(name = "date_evaluation")
     private LocalDateTime dateEvaluation = LocalDateTime.now();
-    private Long citoyenId;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public int getNote() { return note; }
-    public void setNote(int note) { this.note = note; }
-    public String getCommentaire() { return commentaire; }
-    public void setCommentaire(String commentaire) { this.commentaire = commentaire; }
-    public String getServicePublic() { return servicePublic; }
-    public void setServicePublic(String s) { this.servicePublic = s; }
-    public LocalDateTime getDateEvaluation() { return dateEvaluation; }
-    public void setDateEvaluation(LocalDateTime d) { this.dateEvaluation = d; }
-    public Long getCitoyenId() { return citoyenId; }
-    public void setCitoyenId(Long citoyenId) { this.citoyenId = citoyenId; }
+    @Column(name = "citoyen_cin", nullable = false)
+    @JsonAlias("citoyenId")
+    private String citoyenCin;
 }

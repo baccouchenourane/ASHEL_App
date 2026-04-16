@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -23,13 +24,13 @@ public class DocumentService {
     private DemandeDocumentRepository demandeRepo;
 
     // Tarifs officiels par type de document (en DT)
-    private static final Map<TypeDocument, Double> TARIFS = Map.of(
-        TypeDocument.EXTRAIT_NAISSANCE,    0.600,
-        TypeDocument.BULLETIN_B3,          2.000,
-        TypeDocument.REGISTRE_COMMERCE,    50.000,  // Frais RNE
-        TypeDocument.ATTESTATION_TRAVAIL,  1.500,
-        TypeDocument.CERTIFICAT_RESIDENCE, 2.000,
-        TypeDocument.FICHE_PAIE_CNRPS,     0.500
+    private static final Map<TypeDocument, BigDecimal> TARIFS = Map.of(
+        TypeDocument.EXTRAIT_NAISSANCE,    new BigDecimal("0.600"),
+        TypeDocument.BULLETIN_B3,          new BigDecimal("2.000"),
+        TypeDocument.REGISTRE_COMMERCE,    new BigDecimal("50.000"),  // Frais RNE
+        TypeDocument.ATTESTATION_TRAVAIL,  new BigDecimal("1.500"),
+        TypeDocument.CERTIFICAT_RESIDENCE, new BigDecimal("2.000"),
+        TypeDocument.FICHE_PAIE_CNRPS,    new BigDecimal("0.500")
     );
 
     // Préfixes de référence par type
@@ -69,7 +70,7 @@ public class DocumentService {
         String reference = genererReference(type);
 
         // Récupération du montant officiel
-        Double montant = TARIFS.getOrDefault(type, 0.0);
+        BigDecimal montant = TARIFS.getOrDefault(type, BigDecimal.ZERO);
 
         // Création de l'entité
         DemandeDocument demande = new DemandeDocument(

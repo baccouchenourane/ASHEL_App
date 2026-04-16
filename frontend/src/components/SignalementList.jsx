@@ -41,7 +41,11 @@ const SignalementList = () => {
       <div style={{
         padding: '40px 25px', flex: 1,
         display: 'flex', flexDirection: 'column',
-        zIndex: 2, position: 'relative'
+        zIndex: 2, position: 'relative',
+        backgroundColor: '#F8FAFC',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none'
       }}>
 
         {/* Header */}
@@ -54,13 +58,15 @@ const SignalementList = () => {
           <img src={logoAshel} alt="Logo" style={{ height: '35px' }} />
         </div>
 
-        <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '5px' }}>
-          Mes signalements
-        </h2>
-        <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '25px' }}>
-          Suivez l'état de vos signalements
-        </p>
+        <div style={{ marginBottom: '25px' }} className="fade-in">
+          <div className="page-icon-box">
+            <AlertCircle size={24} color="white" />
+          </div>
+          <h2 className="page-title">Mes signalements</h2>
+          <p className="page-subtitle">Suivez l'état de vos signalements</p>
+        </div>
 
+        <div className="page-form-card">
         {loading ? (
           <div style={{ textAlign: 'center', color: '#64748B', marginTop: '40px' }}>
             Chargement...
@@ -115,6 +121,7 @@ const SignalementList = () => {
             })}
           </div>
         )}
+        </div>
 
         {/* Bouton nouveau signalement */}
         {signalements.length > 0 && (

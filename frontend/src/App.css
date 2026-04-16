@@ -237,3 +237,38 @@ body {
   from { transform: translateY(-100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* --- PAGES: CARD & ICON CONSISTENCY --- */
+.page-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #E70011 0%, #c5000e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.page-form-card {
+  background: white;
+  border-radius: 25px;
+  padding: 20px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+  color: #111827;
+}
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  margin: 0;
+}

@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 /**
  * Entité représentant une transaction de paiement effectuée par un utilisateur.
@@ -27,8 +28,8 @@ public class Paiement {
     private String methodePaiement;
 
     /** Montant effectivement payé */
-    @Column(nullable = false)
-    private Double montant;
+    @Column(nullable = false, precision = 10, scale = 3)
+    private BigDecimal montant;
 
     /** Numéro de transaction unique généré */
     @Column(unique = true, nullable = false, length = 30)
@@ -46,7 +47,7 @@ public class Paiement {
     public Paiement() {}
 
     public Paiement(String cin, String referenceFacture, String methodePaiement,
-                    Double montant, String numeroTransaction) {
+                    BigDecimal montant, String numeroTransaction) {
         this.cin = cin;
         this.referenceFacture = referenceFacture;
         this.methodePaiement = methodePaiement;
@@ -70,8 +71,8 @@ public class Paiement {
     public String getMethodePaiement() { return methodePaiement; }
     public void setMethodePaiement(String methodePaiement) { this.methodePaiement = methodePaiement; }
 
-    public Double getMontant() { return montant; }
-    public void setMontant(Double montant) { this.montant = montant; }
+    public BigDecimal getMontant() { return montant; }
+    public void setMontant(BigDecimal montant) { this.montant = montant; }
 
     public String getNumeroTransaction() { return numeroTransaction; }
     public void setNumeroTransaction(String numeroTransaction) { this.numeroTransaction = numeroTransaction; }

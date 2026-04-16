@@ -27,7 +27,10 @@ import VerifyOTP from "./components/VOTP";
 import Signalement from './components/Signalement';
 import Evaluation from './components/Evaluation';
 import Reclamation from './components/Reclamation';
+import ParticipationHub from './components/ParticipationHub';
 import SupportAide from './components/SupportAide'; 
+import SignalementList from './components/SignalementList';
+import AdminDashboard from './components/AdminDashboard';
 
 const GlobalChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -112,6 +115,9 @@ function App() {
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/evaluation" element={<Evaluation />} />
           <Route path="/reclamation" element={<Reclamation />} />
+          <Route path="/participation" element={<ParticipationHub />} />
+          <Route path="/signalement-list" element={<SignalementList />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
         </Routes>
 
         <style>{`

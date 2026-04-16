@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Clock, Users } from 'lucide-react';
 import '../App.css';
 import logoAshel from '../assets/logo_ashel.png';
 
@@ -52,7 +52,11 @@ const AdminDashboard = () => {
       <div style={{
         padding: '40px 25px', flex: 1,
         display: 'flex', flexDirection: 'column',
-        zIndex: 2, position: 'relative'
+        zIndex: 2, position: 'relative',
+        backgroundColor: '#F8FAFC',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none'
       }}>
 
         {/* Header */}
@@ -62,12 +66,15 @@ const AdminDashboard = () => {
           <img src={logoAshel} alt="Logo" style={{ height: '35px' }} />
         </div>
 
-        <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '5px' }}>
-          Dashboard Admin
-        </h2>
-        <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '20px' }}>
-          {signalements.length} signalement(s) au total
-        </p>
+        <div style={{ marginBottom: '20px' }} className="fade-in">
+          <div className="page-icon-box" style={{ marginBottom: '14px' }}>
+            <Users size={22} color="white" />
+          </div>
+          <h2 className="page-title" style={{ marginBottom: '5px' }}>
+            Dashboard Admin
+          </h2>
+          <p className="page-subtitle">{signalements.length} signalement(s) au total</p>
+        </div>
 
         {message && (
           <div style={{
@@ -82,83 +89,87 @@ const AdminDashboard = () => {
         )}
 
         {/* Stats rapides */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          {['NOUVEAU', 'EN_COURS', 'RESOLU'].map(statut => (
-            <div key={statut} style={{
-              flex: 1, backgroundColor: 'white', borderRadius: '10px',
-              padding: '12px', textAlign: 'center',
-              borderTop: `3px solid ${getStatutColor(statut)}`
-            }}>
-              <p style={{ fontSize: '1.4rem', fontWeight: '800', color: getStatutColor(statut) }}>
-                {signalements.filter(s => s.statut === statut).length}
-              </p>
-              <p style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: '700' }}>
-                {statut}
-              </p>
-            </div>
-          ))}
+        <div className="page-form-card">
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {['NOUVEAU', 'EN_COURS', 'RESOLU'].map(statut => (
+              <div key={statut} style={{
+                flex: 1, backgroundColor: 'white', borderRadius: '10px',
+                padding: '12px', textAlign: 'center',
+                borderTop: `3px solid ${getStatutColor(statut)}`
+              }}>
+                <p style={{ fontSize: '1.4rem', fontWeight: '800', color: getStatutColor(statut) }}>
+                  {signalements.filter(s => s.statut === statut).length}
+                </p>
+                <p style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: '700' }}>
+                  {statut}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Liste signalements */}
         {loading ? (
           <p style={{ textAlign: 'center', color: '#64748B' }}>Chargement...</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {signalements.map(s => (
-              <div key={s.id} style={{
-                backgroundColor: 'white', borderRadius: '14px',
-                padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                borderLeft: `4px solid ${getStatutColor(s.statut)}`
-              }}>
-                <div style={{ marginBottom: '10px' }}>
-                  <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{s.titre}</p>
-                  <p style={{ fontSize: '0.8rem', color: '#64748B' }}>{s.categorie}</p>
-                  <p style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '4px' }}>
-                    {s.description}
-                  </p>
-                </div>
+          <div className="page-form-card">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {signalements.map(s => (
+                <div key={s.id} style={{
+                  backgroundColor: 'white', borderRadius: '14px',
+                  padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  borderLeft: `4px solid ${getStatutColor(s.statut)}`
+                }}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{s.titre}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#64748B' }}>{s.categorie}</p>
+                    <p style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '4px' }}>
+                      {s.description}
+                    </p>
+                  </div>
 
-                {/* Boutons actions */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => changerStatut(s.id, 'EN_COURS')}
-                    disabled={s.statut === 'EN_COURS'}
-                    style={{
-                      padding: '6px 12px', borderRadius: '8px', border: 'none',
-                      backgroundColor: '#FEF3C7', color: '#92400E',
-                      fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
-                      opacity: s.statut === 'EN_COURS' ? 0.5 : 1
-                    }}>
-                    <Clock size={12} style={{ marginRight: '4px' }} />
-                    En cours
-                  </button>
-                  <button
-                    onClick={() => changerStatut(s.id, 'RESOLU')}
-                    disabled={s.statut === 'RESOLU'}
-                    style={{
-                      padding: '6px 12px', borderRadius: '8px', border: 'none',
-                      backgroundColor: '#D1FAE5', color: '#065F46',
-                      fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
-                      opacity: s.statut === 'RESOLU' ? 0.5 : 1
-                    }}>
-                    <CheckCircle size={12} style={{ marginRight: '4px' }} />
-                    Résolu
-                  </button>
-                  <button
-                    onClick={() => changerStatut(s.id, 'REJETE')}
-                    disabled={s.statut === 'REJETE'}
-                    style={{
-                      padding: '6px 12px', borderRadius: '8px', border: 'none',
-                      backgroundColor: '#F1F5F9', color: '#475569',
-                      fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
-                      opacity: s.statut === 'REJETE' ? 0.5 : 1
-                    }}>
-                    <XCircle size={12} style={{ marginRight: '4px' }} />
-                    Rejeter
-                  </button>
+                  {/* Boutons actions */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => changerStatut(s.id, 'EN_COURS')}
+                      disabled={s.statut === 'EN_COURS'}
+                      style={{
+                        padding: '6px 12px', borderRadius: '8px', border: 'none',
+                        backgroundColor: '#FEF3C7', color: '#92400E',
+                        fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
+                        opacity: s.statut === 'EN_COURS' ? 0.5 : 1
+                      }}>
+                      <Clock size={12} style={{ marginRight: '4px' }} />
+                      En cours
+                    </button>
+                    <button
+                      onClick={() => changerStatut(s.id, 'RESOLU')}
+                      disabled={s.statut === 'RESOLU'}
+                      style={{
+                        padding: '6px 12px', borderRadius: '8px', border: 'none',
+                        backgroundColor: '#D1FAE5', color: '#065F46',
+                        fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
+                        opacity: s.statut === 'RESOLU' ? 0.5 : 1
+                      }}>
+                      <CheckCircle size={12} style={{ marginRight: '4px' }} />
+                      Résolu
+                    </button>
+                    <button
+                      onClick={() => changerStatut(s.id, 'REJETE')}
+                      disabled={s.statut === 'REJETE'}
+                      style={{
+                        padding: '6px 12px', borderRadius: '8px', border: 'none',
+                        backgroundColor: '#F1F5F9', color: '#475569',
+                        fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer',
+                        opacity: s.statut === 'REJETE' ? 0.5 : 1
+                      }}>
+                      <XCircle size={12} style={{ marginRight: '4px' }} />
+                      Rejeter
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

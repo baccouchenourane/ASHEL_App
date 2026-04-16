@@ -47,7 +47,11 @@ const Evaluation = () => {
       <div style={{
         padding: '40px 25px', flex: 1,
         display: 'flex', flexDirection: 'column',
-        zIndex: 2, position: 'relative'
+        zIndex: 2, position: 'relative',
+        backgroundColor: '#F8FAFC',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none'
       }}>
 
         {/* Header */}
@@ -62,17 +66,13 @@ const Evaluation = () => {
 
         {/* Titre */}
         <div style={{ marginBottom: '25px' }} className="fade-in">
-          <div style={{
-            width: '48px', height: '48px', backgroundColor: '#E70011',
-            borderRadius: '14px', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', marginBottom: '15px'
-          }}>
+          <div className="page-icon-box">
             <Star size={24} color="white" />
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '5px' }}>
+          <h2 className="page-title">
             Évaluation
           </h2>
-          <p style={{ fontSize: '0.9rem', color: '#64748B' }}>
+          <p className="page-subtitle">
             Notez la qualité d'un service public
           </p>
         </div>
@@ -96,6 +96,7 @@ const Evaluation = () => {
           </div>
         )}
 
+        <div className="page-form-card">
         <form onSubmit={handleSubmit} className="fade-in">
 
           <div className="input-group">
@@ -166,6 +167,7 @@ const Evaluation = () => {
           </button>
 
         </form>
+        </div>
       </div>
     </div>
   );

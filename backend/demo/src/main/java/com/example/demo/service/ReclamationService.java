@@ -20,7 +20,7 @@ public class ReclamationService {
         return reclamationRepository.findAll();
     }
 
-    public List<Reclamation> getByCitoyen(Long citoyenId) {
-        return reclamationRepository.findByCitoyenId(citoyenId);
+    public List<Reclamation> getByCitoyen(String citoyenCin) {
+        return reclamationRepository.findByCitoyenCin(citoyenCin);
     }
 }

@@ -522,7 +522,7 @@ const Home = () => {
           <NavItem icon={<LayoutGrid size={24} />} label="Accueil" active />
           <NavItem icon={<FileText size={24} />}   label="E-Admin"       onClick={() => navigate('/e-admin')} />
           <NavItem icon={<CreditCard size={24} />} label="Paiements"     onClick={() => navigate('/paiement')} />
-          <NavItem icon={<Users size={24} />}      label="Participation" onClick={() => navigate('/reclamation')} />
+          <NavItem icon={<Users size={24} />}      label="Participation" onClick={() => navigate('/participation')} />
           <NavItem icon={<User size={24} />}       label="Profil"        onClick={() => navigate('/profil')} />
         </nav>
       </div>

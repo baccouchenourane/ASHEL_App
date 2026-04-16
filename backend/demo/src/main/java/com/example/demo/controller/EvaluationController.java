@@ -25,7 +25,7 @@ public class EvaluationController {
     }
 
     @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Evaluation>> getByCitoyen(@PathVariable Long id) {
+    public ResponseEntity<List<Evaluation>> getByCitoyen(@PathVariable String id) {
         return ResponseEntity.ok(evaluationService.getByCitoyen(id));
     }
 }

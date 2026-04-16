@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -181,19 +182,19 @@ public class PaiementService {
         List<Facture> defauts = List.of(
                 new Facture(cin, "electricite", "STEG",
                         "Facture Électricité",
-                        85.500, "STEG-2026-" + cin,
+                        new BigDecimal("85.500"), "STEG-2026-" + cin,
                         LocalDate.now().plusDays(15)),
                 new Facture(cin, "eau", "SONEDE",
                         "Facture Eau",
-                        42.200, "SONDE-2026-" + cin,
+                        new BigDecimal("42.200"), "SONDE-2026-" + cin,
                         LocalDate.now().plusDays(20)),
                 new Facture(cin, "radar", "MIN. INTÉRIEUR",
                         "Amende Radar PV-2026-88",
-                        60.000, "RADAR-2026-" + cin,
+                        new BigDecimal("60.000"), "RADAR-2026-" + cin,
                         LocalDate.now().plusDays(5)),
                 new Facture(cin, "etude", "UNIVERSITÉ",
                         "Frais Inscription Universitaire",
-                        10.000, "UNIV-2026-" + cin,
+                        new BigDecimal("10.000"), "UNIV-2026-" + cin,
                         LocalDate.now().plusDays(30))
         );
 
