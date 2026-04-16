@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
   User, Mail, KeyRound, Phone, CreditCard,
   Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2,
-  Signal, Wifi, Battery, AlertCircle
+  Signal, Wifi, Battery, AlertCircle, MapPin, Hash, Briefcase
 } from 'lucide-react';
 import logoAshel from '../assets/logo_ashel.png';
 
@@ -19,7 +19,8 @@ const RegisterForm = () => {
 
   const [form, setForm] = useState({
     nom: '', prenom: '', cin: '', telephone: '', email: '',
-    password: '', confirmPassword: ''
+    password: '', confirmPassword: '',
+    ville: '', codePostal: '', profession: ''
   });
 
   const faceIdIllustration = "https://img.freepik.com/vecteurs-premium/concept-reconnaissance-faciale-pour-authentification-biometrique_199064-1100.jpg?w=826";
@@ -69,9 +70,11 @@ const RegisterForm = () => {
           cin: form.cin,
           dateInscription: new Date().toLocaleDateString('fr-TN'),
           adresse: "",
-          ville: "",
-          profession: "",
-          genre: ""
+          ville: form.ville || "",
+          codePostal: form.codePostal || "",
+          profession: form.profession || "",
+          genre: "",
+          dateNaissance: ""
         }));
 
         localStorage.setItem("userCIN", form.cin);
@@ -116,9 +119,11 @@ const RegisterForm = () => {
           cin: form.cin,
           dateInscription: new Date().toLocaleDateString('fr-TN'),
           adresse: "",
-          ville: "",
-          profession: "",
-          genre: ""
+          ville: form.ville || "",
+          codePostal: form.codePostal || "",
+          profession: form.profession || "",
+          genre: "",
+          dateNaissance: ""
         }));
         localStorage.setItem("pending_cin", form.cin);
         setStep(4);
@@ -201,6 +206,26 @@ const RegisterForm = () => {
                   <Mail className="input-icon" size={18} />
                   <input type="email" placeholder="Email" required value={form.email} onChange={handleChange('email')} />
                 </div>
+
+                {/* Optional fields */}
+                <div style={optionalDividerStyle}>
+                  <div style={optionalLineStyle} />
+                  <span style={optionalLabelStyle}>Informations optionnelles</span>
+                  <div style={optionalLineStyle} />
+                </div>
+                <div className="input-with-icon">
+                  <MapPin className="input-icon" size={18} />
+                  <input type="text" placeholder="Ville" value={form.ville} onChange={handleChange('ville')} />
+                </div>
+                <div className="input-with-icon">
+                  <Hash className="input-icon" size={18} />
+                  <input type="text" placeholder="Code postal" maxLength={5} value={form.codePostal} onChange={handleChange('codePostal')} />
+                </div>
+                <div className="input-with-icon">
+                  <Briefcase className="input-icon" size={18} />
+                  <input type="text" placeholder="Profession" value={form.profession} onChange={handleChange('profession')} />
+                </div>
+
                 <button type="submit" className="btn-primary-ashel">Continuer</button>
               </form>
             </div>
@@ -307,6 +332,18 @@ const styles = {
   eyeBtn: { position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' },
   successCircle: { width: '90px', height: '90px', borderRadius: '50%', background: '#f0fdf4', border: '2px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' },
   errorBanner: { display: 'flex', alignItems: 'center', gap: '8px', background: '#fef2f2', color: '#dc2626', padding: '12px', borderRadius: '12px', marginBottom: '16px', fontSize: '0.85rem', fontWeight: '600' }
+};
+
+const optionalDividerStyle = {
+  display: 'flex', alignItems: 'center', gap: '10px',
+  margin: '20px 0 14px',
+};
+const optionalLineStyle = {
+  flex: 1, height: '1px', background: '#e2e8f0',
+};
+const optionalLabelStyle = {
+  fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8',
+  textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap',
 };
 
 export default RegisterForm;

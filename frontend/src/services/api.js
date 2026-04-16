@@ -42,6 +42,10 @@ export const loginRequest = (cin, password) =>
     if (res.ok && data.token) {
       const userData = { cin, token: data.token, ...data.user };
       localStorage.setItem('user_ashel', JSON.stringify(userData));
+      // Persist role separately for quick access across components
+      if (data.user?.role) {
+        localStorage.setItem('user_role', data.user.role);
+      }
     }
     if (!res.ok) throw new Error(data.error || data.message || 'Erreur serveur');
     return data;

@@ -30,7 +30,6 @@ import Reclamation from './components/Reclamation';
 import ParticipationHub from './components/ParticipationHub';
 import SupportAide from './components/SupportAide'; 
 import SignalementList from './components/SignalementList';
-import AdminDashboard from './components/AdminDashboard';
 
 const GlobalChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -117,7 +116,6 @@ function App() {
           <Route path="/reclamation" element={<Reclamation />} />
           <Route path="/participation" element={<ParticipationHub />} />
           <Route path="/signalement-list" element={<SignalementList />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
         </Routes>
 
         <style>{`

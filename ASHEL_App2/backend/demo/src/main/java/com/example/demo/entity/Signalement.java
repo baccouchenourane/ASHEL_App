@@ -22,8 +22,15 @@ public class Signalement {
     @Column(nullable = false)
     private String categorie;
 
-    private String statut = "NOUVEAU";
+    /**
+     * Lifecycle status stored as a VARCHAR string in the DB.
+     * Defaults to NOUVEAU on creation.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatutSignalement statut = StatutSignalement.NOUVEAU;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
 
     private Long citoyenId;
