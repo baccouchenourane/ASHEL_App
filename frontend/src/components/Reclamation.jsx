@@ -6,10 +6,23 @@ import logoAshel from '../assets/logo_ashel.png';
 
 const Reclamation = () => {
   const navigate = useNavigate();
+  const SERVICES = [
+    'Mairie',
+    'Hôpital',
+    'Transport en commun',
+    'École publique',
+    'Poste',
+    'Autre',
+  ];
+
   const [form, setForm] = useState({ objet: '', contenu: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +55,11 @@ const Reclamation = () => {
       <div style={{
         padding: '40px 25px', flex: 1,
         display: 'flex', flexDirection: 'column',
-        zIndex: 2, position: 'relative'
+        zIndex: 2, position: 'relative',
+        backgroundColor: '#F8FAFC',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none'
       }}>
 
         {/* Header */}
@@ -57,17 +74,13 @@ const Reclamation = () => {
 
         {/* Titre */}
         <div style={{ marginBottom: '25px' }} className="fade-in">
-          <div style={{
-            width: '48px', height: '48px', backgroundColor: '#E70011',
-            borderRadius: '14px', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', marginBottom: '15px'
-          }}>
+          <div className="page-icon-box">
             <FileText size={24} color="white" />
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '5px' }}>
+          <h2 className="page-title">
             Réclamation
           </h2>
-          <p style={{ fontSize: '0.9rem', color: '#64748B' }}>
+          <p className="page-subtitle">
             Déposez une réclamation officielle
           </p>
         </div>
@@ -91,17 +104,24 @@ const Reclamation = () => {
           </div>
         )}
 
+        <div className="page-form-card">
         <form onSubmit={handleSubmit} className="fade-in">
-
           <div className="input-group">
-            <input
-              type="text"
-              placeholder="Objet de la réclamation"
+            <select
+              name="objet"
               className="ashal-input"
               value={form.objet}
-              onChange={(e) => setForm({ ...form, objet: e.target.value })}
+              onChange={handleChange}
               required
-            />
+              style={{ appearance: 'none', cursor: 'pointer' }}
+            >
+              <option value="">-- Service public --</option>
+              {SERVICES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="input-group">
@@ -109,10 +129,11 @@ const Reclamation = () => {
               placeholder="Décrivez votre réclamation en détail..."
               className="ashal-input"
               value={form.contenu}
-              onChange={(e) => setForm({ ...form, contenu: e.target.value })}
+              onChange={handleChange}
               required
               rows={5}
               style={{ resize: 'none', paddingTop: '14px' }}
+              name="contenu"
             />
           </div>
 
@@ -127,6 +148,7 @@ const Reclamation = () => {
           </button>
 
         </form>
+        </div>
       </div>
     </div>
   );

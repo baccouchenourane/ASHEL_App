@@ -25,7 +25,7 @@ public class ReclamationController {
     }
 
     @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Reclamation>> getByCitoyen(@PathVariable Long id) {
+    public ResponseEntity<List<Reclamation>> getByCitoyen(@PathVariable String id) {
         return ResponseEntity.ok(reclamationService.getByCitoyen(id));
     }
 }

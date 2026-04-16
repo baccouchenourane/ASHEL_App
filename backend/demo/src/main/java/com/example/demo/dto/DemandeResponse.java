@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import com.example.demo.model.DemandeDocument;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -16,7 +17,7 @@ public class DemandeResponse {
     private String nomTitulaire;
     private String statut;           // "EN_ATTENTE", "PAIEMENT_RECU", "PRET", etc.
     private String modePaiement;
-    private Double montantPaye;
+    private BigDecimal montantPaye;
     private LocalDateTime dateCreation;
     private LocalDateTime dateMAJ;
 
@@ -54,7 +55,7 @@ public class DemandeResponse {
     public String getNomTitulaire() { return nomTitulaire; }
     public String getStatut() { return statut; }
     public String getModePaiement() { return modePaiement; }
-    public Double getMontantPaye() { return montantPaye; }
+    public BigDecimal getMontantPaye() { return montantPaye; }
     public LocalDateTime getDateCreation() { return dateCreation; }
     public LocalDateTime getDateMAJ() { return dateMAJ; }
 }

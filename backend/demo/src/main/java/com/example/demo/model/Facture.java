@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 
 /**
  * Entité représentant une facture liée à un utilisateur (STEG, SONEDE, amende, etc.)
@@ -31,8 +32,8 @@ public class Facture {
     private String libelle;
 
     /** Montant en dinars tunisiens (ex: 85.500) */
-    @Column(nullable = false)
-    private Double montant;
+    @Column(nullable = false, precision = 10, scale = 3)
+    private BigDecimal montant;
 
     /** Référence unique de la facture (ex: STEG-2026-001234) */
     @Column(unique = true, nullable = false, length = 50)
@@ -53,7 +54,7 @@ public class Facture {
     public Facture() {}
 
     public Facture(String cin, String typeFacture, String organisme, String libelle,
-                   Double montant, String reference, LocalDate dateEcheance) {
+                   BigDecimal montant, String reference, LocalDate dateEcheance) {
         this.cin = cin;
         this.typeFacture = typeFacture;
         this.organisme = organisme;
@@ -81,8 +82,8 @@ public class Facture {
     public String getLibelle() { return libelle; }
     public void setLibelle(String libelle) { this.libelle = libelle; }
 
-    public Double getMontant() { return montant; }
-    public void setMontant(Double montant) { this.montant = montant; }
+    public BigDecimal getMontant() { return montant; }
+    public void setMontant(BigDecimal montant) { this.montant = montant; }
 
     public String getReference() { return reference; }
     public void setReference(String reference) { this.reference = reference; }

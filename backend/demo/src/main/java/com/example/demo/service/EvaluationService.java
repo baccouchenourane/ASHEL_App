@@ -20,7 +20,7 @@ public class EvaluationService {
         return evaluationRepository.findAll();
     }
 
-    public List<Evaluation> getByCitoyen(Long citoyenId) {
-        return evaluationRepository.findByCitoyenId(citoyenId);
+    public List<Evaluation> getByCitoyen(String citoyenCin) {
+        return evaluationRepository.findByCitoyenCin(citoyenCin);
     }
 }

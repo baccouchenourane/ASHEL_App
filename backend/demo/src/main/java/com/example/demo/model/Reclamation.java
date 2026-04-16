@@ -1,36 +1,44 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 @Entity
-@Table(name = "reclamation")
+@Table(name = "reclamations")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Reclamation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String objet;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
     private String contenu;
 
-    private String statut = "DEPOSEE";
-    private LocalDateTime dateDepot = LocalDateTime.now();
-    private Long citoyenId;
+    @Enumerated(EnumType.STRING)
+    private StatutReclamation statut = StatutReclamation.DEPOSEE;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getObjet() { return objet; }
-    public void setObjet(String objet) { this.objet = objet; }
-    public String getContenu() { return contenu; }
-    public void setContenu(String contenu) { this.contenu = contenu; }
-    public String getStatut() { return statut; }
-    public void setStatut(String statut) { this.statut = statut; }
-    public LocalDateTime getDateDepot() { return dateDepot; }
-    public void setDateDepot(LocalDateTime d) { this.dateDepot = d; }
-    public Long getCitoyenId() { return citoyenId; }
-    public void setCitoyenId(Long citoyenId) { this.citoyenId = citoyenId; }
+    @Column(name = "date_depot")
+    private LocalDateTime dateDepot = LocalDateTime.now();
+
+    @Column(name = "date_cloture")
+    private LocalDateTime dateCloture;
+
+    @Column(name = "citoyen_cin", nullable = false)
+    @JsonAlias("citoyenId")
+    private String citoyenCin;
+
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Administrateur admin;
+}
+
+enum StatutReclamation {
+    DEPOSEE, EN_TRAITEMENT, CLOTUREE
 }

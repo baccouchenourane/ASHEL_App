@@ -1,5 +1,9 @@
+// src/services/api.js
+// Couche d'accès à l'API backend ASHEL
+
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
-// ─── HELPERS EXPORTÉS ──────────────────────────────────────────────────────
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
 export const getCin = () => {
   const user = JSON.parse(localStorage.getItem('user_ashel'));
   return user?.cin || '';
@@ -16,7 +20,6 @@ const handleResponse = async (res) => {
   return data;
 };
 
-// Headers communs avec authentification
 const getHeaders = () => {
   const headers = {
     'Content-Type': 'application/json',
@@ -28,7 +31,7 @@ const getHeaders = () => {
   return headers;
 };
 
-// ─── EXPORTS AUTHENTIFICATION ──────────────────────────────────────────────
+// ─── AUTHENTIFICATION ──────────────────────────────────────────────────────
 export const loginRequest = (cin, password) =>
   fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
@@ -37,7 +40,6 @@ export const loginRequest = (cin, password) =>
   }).then(async (res) => {
     const data = await res.json();
     if (res.ok && data.token) {
-      // Stocker l'utilisateur avec le token sous la clé 'user_ashel'
       const userData = { cin, token: data.token, ...data.user };
       localStorage.setItem('user_ashel', JSON.stringify(userData));
     }
@@ -47,7 +49,7 @@ export const loginRequest = (cin, password) =>
 
 export const authAPI = {
   loginRequest,
-  
+
   verifyOtp: (cin, code) =>
     fetch(`${BASE_URL}/auth/verify-otp`, {
       method: 'POST',
@@ -70,7 +72,7 @@ export const authAPI = {
     }).then(handleResponse),
 };
 
-// ─── EXPORTS POUR HOME.JSX ─────────────────────────────────────────────────
+// ─── HOME ──────────────────────────────────────────────────────────────────
 export const homeAPI = {
   getDashboard: () =>
     fetch(`${BASE_URL}/home/dashboard?cin=${getCin()}`, {
@@ -94,7 +96,7 @@ export const homeAPI = {
     }).then(handleResponse),
 };
 
-// ─── EXPORTS POUR PAIEMENT ────────────────────────────────────────────────
+// ─── PAIEMENT ──────────────────────────────────────────────────────────────
 export const paiementAPI = {
   getFactures: () =>
     fetch(`${BASE_URL}/paiement/factures?cin=${getCin()}`, {
@@ -108,17 +110,17 @@ export const paiementAPI = {
       headers: getHeaders(),
     }).then(handleResponse),
 
-initierPaiement: (referenceFacture, methodePaiement, montant) =>
-  fetch(`${BASE_URL}/paiement/initier`, {
-    method: 'POST',
-    headers: getHeaders(), // <--- TRÈS IMPORTANT
-    body: JSON.stringify({ 
-      cin: getCin(), 
-      referenceFacture, 
-      methodePaiement,
-      montant 
-    }),
-  }).then(handleResponse),
+  initierPaiement: (referenceFacture, methodePaiement, montant) =>
+    fetch(`${BASE_URL}/paiement/initier`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        cin: getCin(),
+        referenceFacture,
+        methodePaiement,
+        montant,
+      }),
+    }).then(handleResponse),
 
   confirmerPaiement: (numeroTransaction) =>
     fetch(`${BASE_URL}/paiement/confirmer`, {
@@ -140,11 +142,8 @@ initierPaiement: (referenceFacture, methodePaiement, montant) =>
     }).then(handleResponse),
 };
 
-// ─── E-ADMINISTRATION — DOCUMENTS ──────────────────────────────────────────
+// ─── DOCUMENTS ─────────────────────────────────────────────────────────────
 export const documentsAPI = {
-  /**
-   * Créer une demande de document après paiement.
-   */
   creerDemandeDocument: ({
     cinDemandeur,
     nomTitulaire,
@@ -152,7 +151,6 @@ export const documentsAPI = {
     modePaiement,
     dernierChiffres = "",
   }) => {
-    // Utilise le cin passé en paramètre ou celui du localStorage par défaut
     const finalCin = cinDemandeur || getCin();
     return fetch(`${BASE_URL}/documents/demande`, {
       method: "POST",
@@ -167,23 +165,19 @@ export const documentsAPI = {
     }).then(handleResponse);
   },
 
-  // Alias pour la compatibilité avec le premier code
   creerDemande: (args) => documentsAPI.creerDemandeDocument(args),
 
-  /**
-   * Soumettre une demande Registre de Commerce (RegisterForm).
-   */
   soumettreRegistreCommerce: (cinDemandeur, formData) => {
-    // Gestion flexible si cinDemandeur est omis (cas du premier code)
     let finalCin = cinDemandeur;
     let data = formData;
 
     if (typeof cinDemandeur === 'object') {
-       finalCin = getCin();
-       data = cinDemandeur;
+      finalCin = getCin();
+      data = cinDemandeur;
     }
 
     const nomTitulaire = `${data.gerantPrenom} ${data.gerantNom}`;
+
     return fetch(`${BASE_URL}/documents/registre-commerce`, {
       method: "POST",
       headers: getHeaders(),
@@ -196,9 +190,6 @@ export const documentsAPI = {
     }).then(handleResponse);
   },
 
-  /**
-   * Récupérer tous les documents du coffre-fort d'un citoyen.
-   */
   getCoffreFort: (cin) => {
     const finalCin = cin || getCin();
     return fetch(`${BASE_URL}/documents/coffre-fort/${finalCin}`, {
@@ -207,21 +198,15 @@ export const documentsAPI = {
     }).then(handleResponse);
   },
 
-  /**
-   * Consulter le statut d'un dossier par sa référence.
-   */
   getStatutDemande: (reference) =>
     fetch(`${BASE_URL}/documents/statut/${reference}`, {
       method: "GET",
       headers: getHeaders(),
     }).then(handleResponse),
 
-  // Alias pour la compatibilité avec le premier code
-  getStatut: (reference) => documentsAPI.getStatutDemande(reference),
+  getStatut: (reference) =>
+    documentsAPI.getStatutDemande(reference),
 
-  /**
-   * Récupérer les types de documents disponibles et leurs tarifs.
-   */
   getTypesTarifs: () =>
     fetch(`${BASE_URL}/documents/types`, {
       method: "GET",
@@ -229,6 +214,5 @@ export const documentsAPI = {
     }).then(handleResponse),
 };
 
-// Export supplémentaire pour matcher exactement le premier code si nécessaire
+// Alias
 export const documentAPI = documentsAPI;
-

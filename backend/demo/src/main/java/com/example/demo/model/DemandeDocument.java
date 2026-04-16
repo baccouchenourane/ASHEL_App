@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "demandes_documents")
@@ -37,16 +38,16 @@ public class DemandeDocument {
     @Column
     private String modePaiement; // "CARTE_BANCAIRE" ou "EDINAR"
 
-    // Montant payé en dinars
-    @Column
-    private Double montantPaye;
+    // Montant payé en dinars (CORRIGÉ)
+    @Column(name = "montant_paye", precision = 10, scale = 2)
+    private BigDecimal montantPaye;
 
     // Date de création de la demande
     @Column(nullable = false)
     private LocalDateTime dateCreation;
 
-    // Date de mise à jour
-    @Column
+    // Date de mise à jour (CORRIGÉ)
+    @Column(name = "date_maj")
     private LocalDateTime dateMAJ;
 
     // Données supplémentaires (JSON simplifié pour RegisterForm)
@@ -77,7 +78,7 @@ public class DemandeDocument {
     public DemandeDocument(String reference, TypeDocument typeDocument,
                            String cinDemandeur, String nomTitulaire,
                            StatutDemande statut, String modePaiement,
-                           Double montantPaye) {
+                           BigDecimal montantPaye) {
         this.reference = reference;
         this.typeDocument = typeDocument;
         this.cinDemandeur = cinDemandeur;
@@ -114,8 +115,8 @@ public class DemandeDocument {
     public String getModePaiement() { return modePaiement; }
     public void setModePaiement(String modePaiement) { this.modePaiement = modePaiement; }
 
-    public Double getMontantPaye() { return montantPaye; }
-    public void setMontantPaye(Double montantPaye) { this.montantPaye = montantPaye; }
+    public BigDecimal getMontantPaye() { return montantPaye; }
+    public void setMontantPaye(BigDecimal montantPaye) { this.montantPaye = montantPaye; }
 
     public LocalDateTime getDateCreation() { return dateCreation; }
     public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }

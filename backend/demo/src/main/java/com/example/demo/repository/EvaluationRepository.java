@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
-    List<Evaluation> findByCitoyenId(Long citoyenId);
+    List<Evaluation> findByCitoyenCin(String citoyenCin);
 }
