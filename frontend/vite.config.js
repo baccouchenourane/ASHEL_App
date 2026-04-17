@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -38,7 +37,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/localhost:8081\/api\/.*/i,
+            // ✅ Capture toutes les IPs possibles, pas juste localhost
+            urlPattern: /\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'ashel-api-cache',
@@ -50,4 +50,8 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    host: true,   // ✅ Expose sur le réseau local (pour le téléphone)
+    port: 5173,
+  }
 })

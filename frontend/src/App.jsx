@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { MessageCircle, X } from 'lucide-react';
+import SplashScreen from './components/SplashScreen'
 
 // IMPORT DU PROVIDER (Indispensable pour corriger l'écran bleu)
 import { VaultProvider } from './components/VaultContext';
@@ -83,6 +84,12 @@ const GlobalChatbot = () => {
 };
 
 function App() {
+    const [showSplash, setShowSplash] = useState(true)
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />
+  }
+
   return (
     // On enveloppe TOUT avec VaultProvider pour que addDoc fonctionne partout
     <VaultProvider>
