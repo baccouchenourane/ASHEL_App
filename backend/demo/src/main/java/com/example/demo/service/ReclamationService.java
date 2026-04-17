@@ -4,7 +4,10 @@ import com.example.demo.model.Reclamation;
 import com.example.demo.repository.ReclamationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class ReclamationService {
@@ -13,6 +16,8 @@ public class ReclamationService {
     private ReclamationRepository reclamationRepository;
 
     public Reclamation creer(Reclamation reclamation) {
+        reclamation.setReference(genererReference());
+        reclamation.setDateCreation(LocalDateTime.now());
         return reclamationRepository.save(reclamation);
     }
 
@@ -20,7 +25,12 @@ public class ReclamationService {
         return reclamationRepository.findAll();
     }
 
-    public List<Reclamation> getByCitoyen(Long citoyenId) {
-        return reclamationRepository.findByCitoyenId(citoyenId);
+    // Recherche par CIN (et non plus par citoyenId Long)
+    public List<Reclamation> getByCin(String cin) {
+        return reclamationRepository.findByCinOrderByDateCreationDesc(cin);
+    }
+
+    private String genererReference() {
+        return "REC-" + System.currentTimeMillis() + "-" + (new Random().nextInt(900) + 100);
     }
 }

@@ -23,9 +23,9 @@ public class ReclamationController {
     public ResponseEntity<List<Reclamation>> getAll() {
         return ResponseEntity.ok(reclamationService.getAll());
     }
+@GetMapping("/citoyen/{cin}")
+public ResponseEntity<List<Reclamation>> getByCin(@PathVariable String cin) {
+    return ResponseEntity.ok(reclamationService.getByCin(cin));
+}
 
-    @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Reclamation>> getByCitoyen(@PathVariable Long id) {
-        return ResponseEntity.ok(reclamationService.getByCitoyen(id));
-    }
 }

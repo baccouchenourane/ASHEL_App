@@ -89,6 +89,9 @@ const PaiementFacture = () => {
       } finally {
         setChargementFacture(false);
       }
+      const factures = await paiementAPI.getFactures(cin);
+console.log("Factures reçues du backend:", factures);
+console.log("Type recherché (frontend):", type);
     };
 
     chargerFacture();

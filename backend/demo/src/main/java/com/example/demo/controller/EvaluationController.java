@@ -24,8 +24,8 @@ public class EvaluationController {
         return ResponseEntity.ok(evaluationService.getAll());
     }
 
-    @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Evaluation>> getByCitoyen(@PathVariable Long id) {
-        return ResponseEntity.ok(evaluationService.getByCitoyen(id));
-    }
+    @GetMapping("/citoyen/{cin}")
+public ResponseEntity<List<Evaluation>> getByCin(@PathVariable String cin) {
+    return ResponseEntity.ok(evaluationService.getByCin(cin));
+}
 }

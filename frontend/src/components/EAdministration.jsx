@@ -14,7 +14,7 @@ import {
 
 } from 'lucide-react';
 
-
+import DocumentVault from './DocumentVault';
 
 // --- CONSTANTES DE DONNÉES ---
 

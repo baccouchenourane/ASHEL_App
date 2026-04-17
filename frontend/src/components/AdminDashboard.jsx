@@ -11,7 +11,7 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8081/api/signalements')
+    fetch('http://192.168.1.13:8081/api/signalements')
       .then(res => res.json())
       .then(data => {
         setSignalements(data);

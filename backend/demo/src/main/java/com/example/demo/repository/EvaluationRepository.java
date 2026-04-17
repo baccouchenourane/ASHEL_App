@@ -5,5 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
-    List<Evaluation> findByCitoyenId(Long citoyenId);
+
+    boolean existsByCinAndDemandeId(String cin, Long demandeId);
+    boolean existsByCinAndFactureId(String cin, Long factureId);
+    List<Evaluation> findByCinOrderByDateCreationDesc(String cin);
 }

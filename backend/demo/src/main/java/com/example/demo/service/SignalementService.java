@@ -5,8 +5,10 @@ import com.example.demo.repository.SignalementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -17,26 +19,30 @@ public class SignalementService {
 
     private final String UPLOAD_DIR = "uploads/signalements/";
 
-    public Signalement creer(String titre, String description,
-                              String categorie, Long citoyenId,
+    public Signalement creer(String cin, String categorieStr,
+                              String description,
                               List<MultipartFile> photos) throws IOException {
         Signalement s = new Signalement();
-        s.setTitre(titre);
+        s.setReference(genererReference());
+        s.setCin(cin);
+        s.setCategorie(Signalement.Categorie.valueOf(categorieStr.toUpperCase()));
         s.setDescription(description);
-        s.setCategorie(categorie);
-        s.setCitoyenId(citoyenId);
+        s.setDateCreation(LocalDateTime.now());
 
         if (photos != null && !photos.isEmpty()) {
             List<String> paths = new ArrayList<>();
             Files.createDirectories(Paths.get(UPLOAD_DIR));
             for (MultipartFile photo : photos) {
                 String filename = UUID.randomUUID() + "_" + photo.getOriginalFilename();
-                Path path = Paths.get(UPLOAD_DIR + filename);
-                Files.copy(photo.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(photo.getInputStream(),
+                           Paths.get(UPLOAD_DIR + filename),
+                           StandardCopyOption.REPLACE_EXISTING);
                 paths.add(filename);
             }
-            s.setPhotos(String.join(",", paths));
+            // On stocke les chemins dans url_capture (séparés par virgule)
+            s.setUrlCapture(String.join(",", paths));
         }
+
         return signalementRepository.save(s);
     }
 
@@ -44,14 +50,18 @@ public class SignalementService {
         return signalementRepository.findAll();
     }
 
-    public List<Signalement> getByCitoyen(Long citoyenId) {
-        return signalementRepository.findByCitoyenId(citoyenId);
+    public List<Signalement> getByCin(String cin) {
+        return signalementRepository.findByCinOrderByDateCreationDesc(cin);
     }
 
     public Signalement changerStatut(Long id, String statut) {
         Signalement s = signalementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
-        s.setStatut(statut);
+                .orElseThrow(() -> new RuntimeException("Signalement introuvable"));
+        s.setStatut(Signalement.StatutSignalement.valueOf(statut.toUpperCase()));
         return signalementRepository.save(s);
+    }
+
+    private String genererReference() {
+        return "SIG-" + System.currentTimeMillis() + "-" + (new Random().nextInt(900) + 100);
     }
 }

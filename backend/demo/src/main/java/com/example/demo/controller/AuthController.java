@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173") // Port par défaut de Vite
+
 public class AuthController {
 
     @Autowired
@@ -61,12 +61,15 @@ public class AuthController {
             // On appelle le service pour vérifier la validité
             boolean isValid = authService.verifyOtp(cin, code);
 
-            if (isValid) {
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "message", "Vérification réussie"
-                ));
-            } else {
+           if (isValid) {
+    String token = java.util.UUID.randomUUID().toString();
+    // Stocke ce token dans ta DB ou une Map en mémoire si tu veux
+    return ResponseEntity.ok(Map.of(
+        "success", true,
+        "message", "Vérification réussie",
+        "token", token   // ← frontend attend ça
+    ));
+} else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Code OTP incorrect ou expiré"));
             }

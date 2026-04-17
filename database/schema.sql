@@ -144,7 +144,170 @@ CREATE TABLE IF NOT EXISTS paiements (
 -- =============================================================
 INSERT IGNORE INTO users (cin, nom, password, phone)
 VALUES ('12345678', 'Mohamed Ali', 'password123', '+21698000000');
+-- =============================================================
+--  TABLE : reclamations
+--  Entité : Reclamation.java
+--  Types   : DOCUMENT | PAIEMENT | FACTURE | SERVICE | AUTRE
+--  Statuts : OUVERTE | EN_COURS | RESOLUE | FERMEE
+-- =============================================================
+CREATE TABLE IF NOT EXISTS reclamations (
+    id               BIGINT        NOT NULL AUTO_INCREMENT,
+    reference        VARCHAR(30)   NOT NULL,
+    cin              VARCHAR(8)    NOT NULL,
+    type_reclamation ENUM(
+                         'DOCUMENT',
+                         'PAIEMENT',
+                         'FACTURE',
+                         'SERVICE',
+                         'AUTRE'
+                     ) NOT NULL,
+    sujet            VARCHAR(255)  NOT NULL,
+    description      TEXT          NOT NULL,
+    statut           ENUM(
+                         'OUVERTE',
+                         'EN_COURS',
+                         'RESOLUE',
+                         'FERMEE'
+                     ) NOT NULL DEFAULT 'OUVERTE',
+    reference_liee   VARCHAR(50)   NULL,        -- Référence optionnelle (demande / facture / paiement)
+    reponse_admin    TEXT          NULL,
+    date_creation    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_maj         DATETIME      NULL ON UPDATE CURRENT_TIMESTAMP,
 
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_reclamations_reference (reference),
+    INDEX idx_reclamations_cin    (cin),
+    INDEX idx_reclamations_statut (statut),
+
+    CONSTRAINT fk_reclamations_user
+        FOREIGN KEY (cin) REFERENCES users (cin)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================================
+--  TABLE : signalements
+--  Entité : Signalement.java
+--  Catégories : BUG | FRAUDE | CONTENU_INAPPROPRIE | SECURITE | AUTRE
+--  Statuts    : NOUVEAU | EN_EXAMEN | TRAITE | REJETE
+-- =============================================================
+CREATE TABLE IF NOT EXISTS signalements (
+    id            BIGINT        NOT NULL AUTO_INCREMENT,
+    reference     VARCHAR(30)   NOT NULL,
+    cin           VARCHAR(8)    NOT NULL,
+    categorie     ENUM(
+                      'BUG',
+                      'FRAUDE',
+                      'CONTENU_INAPPROPRIE',
+                      'SECURITE',
+                      'AUTRE'
+                  ) NOT NULL,
+    description   TEXT          NOT NULL,
+    statut        ENUM(
+                      'NOUVEAU',
+                      'EN_EXAMEN',
+                      'TRAITE',
+                      'REJETE'
+                  ) NOT NULL DEFAULT 'NOUVEAU',
+    url_capture   VARCHAR(500)  NULL,           -- Lien ou chemin vers une capture d'écran
+    note_interne  TEXT          NULL,           -- Commentaire interne (admin uniquement)
+    date_creation DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_maj      DATETIME      NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_signalements_reference (reference),
+    INDEX idx_signalements_cin       (cin),
+    INDEX idx_signalements_categorie (categorie),
+    INDEX idx_signalements_statut    (statut),
+
+    CONSTRAINT fk_signalements_user
+        FOREIGN KEY (cin) REFERENCES users (cin)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================================
+--  TABLE : evaluations
+--  Entité : Evaluation.java
+--  Note   : 1 à 5 (étoiles)
+--  Contrainte : une seule évaluation par (cin, demande) ou (cin, facture)
+-- =============================================================
+-- =============================================================
+--  TABLE : evaluations  (version corrigée)
+--  Contrainte XOR gérée par TRIGGER (contournement MySQL #3823)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS evaluations (
+    id            BIGINT        NOT NULL AUTO_INCREMENT,
+    cin           VARCHAR(8)    NOT NULL,
+    demande_id    BIGINT        NULL,
+    facture_id    BIGINT        NULL,
+    note          TINYINT       NOT NULL,
+    commentaire   TEXT          NULL,
+    date_creation DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    INDEX idx_evaluations_cin      (cin),
+    INDEX idx_evaluations_demande  (demande_id),
+    INDEX idx_evaluations_facture  (facture_id),
+
+    UNIQUE KEY uq_eval_cin_demande (cin, demande_id),
+    UNIQUE KEY uq_eval_cin_facture (cin, facture_id),
+
+    CONSTRAINT chk_eval_note
+        CHECK (note BETWEEN 1 AND 5),
+
+    CONSTRAINT fk_evaluations_user
+        FOREIGN KEY (cin)        REFERENCES users (cin)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+
+    CONSTRAINT fk_evaluations_demande
+        FOREIGN KEY (demande_id) REFERENCES demandes_documents (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT fk_evaluations_facture
+        FOREIGN KEY (facture_id) REFERENCES factures (id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- -------------------------------------------------------------
+--  TRIGGER : enforce XOR(demande_id, facture_id)
+--  Remplace le CHECK interdit par MySQL (#3823)
+-- -------------------------------------------------------------
+DELIMITER $$
+
+CREATE TRIGGER trg_eval_xor_before_insert
+BEFORE INSERT ON evaluations
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        (NEW.demande_id IS NOT NULL AND NEW.facture_id IS NULL)
+        OR
+        (NEW.demande_id IS NULL     AND NEW.facture_id IS NOT NULL)
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Une évaluation doit cibler soit une demande, soit une facture — pas les deux, pas aucune.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_eval_xor_before_update
+BEFORE UPDATE ON evaluations
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        (NEW.demande_id IS NOT NULL AND NEW.facture_id IS NULL)
+        OR
+        (NEW.demande_id IS NULL     AND NEW.facture_id IS NOT NULL)
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Une évaluation doit cibler soit une demande, soit une facture — pas les deux, pas aucune.';
+    END IF;
+END$$
+
+DELIMITER ;
 
 -- =============================================================
 --  VÉRIFICATION RAPIDE
@@ -155,4 +318,10 @@ SELECT 'demandes_documents',               COUNT(*)            FROM demandes_doc
 UNION ALL
 SELECT 'factures',                         COUNT(*)            FROM factures
 UNION ALL
-SELECT 'paiements',                        COUNT(*)            FROM paiements;
+SELECT 'paiements',                        COUNT(*)            FROM paiements
+UNION ALL
+SELECT 'reclamations',                     COUNT(*)            FROM reclamations
+UNION ALL
+SELECT 'signalements',                     COUNT(*)            FROM signalements
+UNION ALL
+SELECT 'evaluations',                      COUNT(*)            FROM evaluations;                      

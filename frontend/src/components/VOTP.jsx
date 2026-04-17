@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, Loader2, Check, AlertCircle, Signal, Wifi, Battery } from "lucide-react";
-import axios from "axios";
-
+import { authAPI } from "../services/api";
 const VOTP = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [loading, setLoading] = useState(false);
@@ -35,67 +34,57 @@ const VOTP = () => {
     }
   };
 
-  const handleVerify = async () => {
+ const handleVerify = async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.post("http://localhost:8081/api/auth/verify-otp", {
-        cin: userCIN,
-        code: otp.join("")
-      });
+      // ✅ Utilise authAPI au lieu d'axios hardcodé
+      const response = await authAPI.verifyOtp(userCIN, otp.join(""));
 
-      if (response.data.success) {
-        const pendingUser = JSON.parse(localStorage.getItem("pending_user"));
-        localStorage.setItem("ashel_token", "session_active_" + userCIN); 
+     if (response.success) {
+  const pendingUser = JSON.parse(localStorage.getItem("pending_user"));
 
-        const userSession = {
-          cin: userCIN,
-          nom: pendingUser?.nom || "Citoyen",
-          isLoggedIn: true
-        };
-        localStorage.setItem("user_ashel", JSON.stringify(userSession));
+  // ✅ Clé 1 : ashel_token (pour Home.jsx ligne 90)
+  localStorage.setItem("ashel_token", response.token || "session_" + userCIN);
 
-        localStorage.removeItem("pending_cin");
-        localStorage.removeItem("pending_user");
+  // ✅ Clé 2 : user_ashel (pour getCin() dans api.js)
+  localStorage.setItem("user_ashel", JSON.stringify({
+    cin: userCIN,
+    token: response.token || "session_" + userCIN,
+    nom: pendingUser?.nom || "Citoyen",
+    isLoggedIn: true
+  }));
 
-        setSuccess(true);
-        setTimeout(() => {
-          navigate("/home");
-        }, 1500);
-      }
+  localStorage.removeItem("pending_cin");
+  localStorage.removeItem("pending_user");
+
+  setSuccess(true);
+  setTimeout(() => navigate("/home"), 1500);
+}
     } catch (err) {
-      setError(err.response?.data?.error || "Code incorrect.");
+      setError(err.message || "Code incorrect.");
     } finally {
       setLoading(false);
     }
-  };
+};
 
-  const handleResend = async () => {
+ const handleResend = async () => {
     setResendLoading(true);
-    setResendSuccess(false);
-    setError("");
     try {
-      const response = await axios.post("http://localhost:8081/api/auth/resend-otp", {
-        cin: userCIN,
-      });
-
-      const newCode = response.data.otp;
-      setNewOtpSimulated(newCode);
-      localStorage.setItem("temp_otp", newCode);
-
+      // ✅ Utilise authAPI au lieu d'axios hardcodé
+      const response = await authAPI.resendOtp(userCIN);
+      setNewOtpSimulated(response.otp);
+      localStorage.setItem("temp_otp", response.otp);
       setResendSuccess(true);
       setOtp(new Array(6).fill(""));
-      setTimeout(() => {
-        setResendSuccess(false);
-        setNewOtpSimulated("");
-      }, 5000);
+      setTimeout(() => { setResendSuccess(false); setNewOtpSimulated(""); }, 5000);
     } catch (err) {
-      setError(err.response?.data?.error || "Impossible de renvoyer le code.");
+      setError(err.message || "Impossible de renvoyer le code.");
     } finally {
       setResendLoading(false);
       if (inputRefs.current[0]) inputRefs.current[0].focus();
     }
-  };
+};
 
   return (
     <div className="auth-container dark-theme">

@@ -15,12 +15,12 @@ import WorkCertificateForm from './components/WorkCertificateForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import DocumentVault from './components/DocumentVault'; 
-import PaiementAmende from './components/paiementAmende'; 
+import PaiementAmende from './components/paiementamende'; 
 import PaymentHub from './components/Paymenthub';
 import FacturePage from './components/Facturepage';
 import PaiementFacture from './components/PaiementFacture';
 import FactureDetail from './components/FactureDetail';
-import PaiementAdministration from './components/PaiementAdministration'; 
+import PaiementAdministration from './components/paiementAdministration'; 
 import CheckoutService from './components/PaiementAdministrationAction.jsx'; 
 import Profil from './components/Profiltemp'; 
 import VerifyOTP from "./components/VOTP"; 
@@ -108,38 +108,27 @@ function App() {
           <Route path="/facture/:id" element={<FactureDetail />} /> 
           <Route path="/paiement-facture/:type" element={<FacturePage />} />
           <Route path="/paiement-facture/:type/payer" element={<PaiementFacture />} />
+        
           <Route path="/checkout-service/:type" element={<CheckoutService />} />
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/evaluation" element={<Evaluation />} />
           <Route path="/reclamation" element={<Reclamation />} />
+          <Route path="/support-aide" element={<SupportAide />} />
         </Routes>
 
-        <style>{`
-          .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-          @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-          .fade-in-right { animation: fadeInRight 0.5s ease-out; }
-          @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-          .pulse-button { animation: pulseShadow 2s infinite; transition: transform 0.2s; }
-          .pulse-button:hover { transform: scale(1.1); }
-          @keyframes pulseShadow { 
-            0% { box-shadow: 0 0 0 0 rgba(0, 86, 210, 0.4); } 
-            70% { box-shadow: 0 0 0 15px rgba(0, 86, 210, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(0, 86, 210, 0); } 
-          }
-          .animate-spin { animation: spin 1s linear infinite; }
-          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        `}</style>
+
       </Router>
     </VaultProvider>
   );
 }
 
-const fabContainer = { position: 'fixed', bottom: '30px', right: '25px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', zIndex: 9999 };
-const fabStyle = { background: '#0056D2', width: '65px', height: '65px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative' };
+// FAB positionné au-dessus de la navbar mobile (85px) + safe area
+const fabContainer = { position: 'fixed', bottom: 'calc(95px + env(safe-area-inset-bottom, 0px))', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', zIndex: 9999 };
+const fabStyle = { background: '#0056D2', width: '58px', height: '58px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative' };
 const notifBadge = { position: 'absolute', top: '2px', right: '2px', background: '#EF4444', color: 'white', fontSize: '10px', padding: '3px 7px', borderRadius: '10px', border: '2px solid white', fontWeight: 'bold' };
-const tooltipStyle = { background: '#1E293B', color: 'white', padding: '12px 18px', borderRadius: '15px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '15px', boxShadow: '0 5px 15px rgba(0,0,0,0.2)', position: 'relative' };
-const tooltipArrow = { position: 'absolute', bottom: '-6px', right: '25px', width: '12px', height: '12px', background: '#1E293B', transform: 'rotate(45deg)' };
-const chatWrapper = { position: 'fixed', bottom: '20px', right: '20px', left: '20px', height: '75vh', maxWidth: '420px', margin: '0 auto', background: 'white', borderRadius: '28px', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', zIndex: 10000, overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid #E2E8F0' };
+const tooltipStyle = { background: '#1E293B', color: 'white', padding: '10px 15px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 'bold', marginBottom: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.2)', position: 'relative', whiteSpace: 'nowrap' };
+const tooltipArrow = { position: 'absolute', bottom: '-6px', right: '22px', width: '12px', height: '12px', background: '#1E293B', transform: 'rotate(45deg)' };
+const chatWrapper = { position: 'fixed', bottom: 'env(safe-area-inset-bottom, 0px)', right: '0', left: '0', height: '82vh', maxWidth: '480px', margin: '0 auto', background: 'white', borderRadius: '28px 28px 0 0', boxShadow: '0 -10px 60px rgba(0,0,0,0.3)', zIndex: 10000, overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid #E2E8F0' };
 const chatHeader = { padding: '18px 20px', background: '#1E293B', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
 const onlineDot = { width: '10px', height: '10px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981' };
 

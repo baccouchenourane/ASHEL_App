@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Facture;
 import com.example.demo.model.Paiement;
-import com.example.demo.model.User;
+
 import com.example.demo.repository.FactureRepository;
 import com.example.demo.repository.PaiementRepository;
 import com.example.demo.repository.UserRepository;
