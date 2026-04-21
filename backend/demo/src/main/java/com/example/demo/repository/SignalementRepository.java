@@ -1,21 +1,30 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.Signalement;
-import com.example.demo.model.Signalement.StatutSignalement;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.List;
-import java.util.Optional;
 
-@Repository
 public interface SignalementRepository extends JpaRepository<Signalement, Long> {
+
+    // Based on your schema, the field is 'cin', not 'citoyenId' or 'citoyenCin'
+    List<Signalement> findByCin(String cin);
+
+    List<Signalement> findByStatut(String statut);
+
+    List<Signalement> findByCategorie(String categorie);
 
     List<Signalement> findByCinOrderByDateCreationDesc(String cin);
 
-    Optional<Signalement> findByReference(String reference);
+    List<Signalement> findAllByOrderByDateCreationDesc();
 
-    List<Signalement> findByStatut(StatutSignalement statut);
+    @Query("SELECT s FROM Signalement s WHERE s.statut = :statut ORDER BY s.dateCreation DESC")
+    List<Signalement> findSignalementsByStatut(@Param("statut") String statut);
 
-    List<Signalement> findByCategorie(Signalement.Categorie categorie);
+    long countByCin(String cin);
+
+    long countByStatut(String statut);
+
+    List<Signalement> findByCitoyenId(Long citoyenId);
 }

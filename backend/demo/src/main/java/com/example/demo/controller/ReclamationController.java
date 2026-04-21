@@ -23,9 +23,22 @@ public class ReclamationController {
     public ResponseEntity<List<Reclamation>> getAll() {
         return ResponseEntity.ok(reclamationService.getAll());
     }
-@GetMapping("/citoyen/{cin}")
-public ResponseEntity<List<Reclamation>> getByCin(@PathVariable String cin) {
-    return ResponseEntity.ok(reclamationService.getByCin(cin));
-}
 
+    @GetMapping("/citoyen/{id}")
+    public ResponseEntity<List<Reclamation>> getByCitoyen(@PathVariable String id) {
+        return ResponseEntity.ok(reclamationService.getByCitoyen(id));
+    }
+
+    @PatchMapping("/{id}/statut")
+    public ResponseEntity<?> changerStatut(
+            @PathVariable Long id,
+            @RequestParam String statut) {
+        try {
+            return ResponseEntity.ok(reclamationService.changerStatut(id, statut));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Statut invalide : " + statut));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

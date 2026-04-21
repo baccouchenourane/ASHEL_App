@@ -35,7 +35,7 @@ const PaiementFacture = () => {
   const [success, setSuccess]       = useState(false);
   const [error, setError]           = useState('');
   const [recu, setRecu]             = useState(null);
-  const [facture, setFacture]       = useState(null); // Stocker la vraie facture du backend
+  const [facture, setFacture]       = useState(null);
   const [chargementFacture, setChargementFacture] = useState(true);
   
   // États pour les formulaires
@@ -48,87 +48,135 @@ const PaiementFacture = () => {
   // Charger la facture depuis le backend au chargement
   useEffect(() => {
     const chargerFacture = async () => {
-      const cin = getCin();
-      if (!cin) {
-        navigate('/');
-        return;
-      }
+  const cin = getCin();
+  if (!cin) {
+    navigate('/');
+    return;
+  }
 
-      try {
-        setChargementFacture(true);
-        // Récupérer les factures de l'utilisateur
-        const factures = await paiementAPI.getFactures(cin);
-        
-        // Trouver une facture du type correspondant
-        let factureTrouvee = null;
-        
-        // Mapping des types frontend vers backend
-        const typeMapping = {
-          electricite: 'ELECTRICITE',
-          eau: 'EAU',
-          wifi: 'INTERNET',
-          etude: 'ETUDE',
-          amende: 'AMENDE'
-        };
-        
-        const backendType = typeMapping[type] || type.toUpperCase();
-        
-        // Chercher une facture non payée du bon type
-        factureTrouvee = factures.find(
-          f => f.type === backendType && f.statut !== 'PAYEE'
-        );
-        
-        if (factureTrouvee) {
-          setFacture(factureTrouvee);
-        } else {
-          setError(`Aucune facture ${config.label} trouvée à payer`);
-        }
-      } catch (err) {
-        console.error('Erreur chargement facture:', err);
-        setError('Impossible de charger les factures');
-      } finally {
-        setChargementFacture(false);
-      }
-      const factures = await paiementAPI.getFactures(cin);
-console.log("Factures reçues du backend:", factures);
-console.log("Type recherché (frontend):", type);
-    };
+  try {
+    setChargementFacture(true);
+    const factures = await paiementAPI.getFactures(cin);
+    
+    console.log("Factures reçues du backend:", factures);
+    console.log("Type recherché (frontend):", type);
+    console.log("Détail des factures:", JSON.stringify(factures, null, 2));
+    
+    // Trouver une facture du type correspondant
+    let factureTrouvee = null;
+    
+    // ESSAYE D'ABORD avec typeFacture (ce que tu avais)
+    factureTrouvee = factures.find(
+      f => f.typeFacture === type && f.statut !== 'PAYEE'
+    );
+    
+    // SI PAS TROUVÉ, essaie avec 'type' (sans 'Facture')
+    if (!factureTrouvee) {
+      console.log("Essai avec champ 'type'");
+      factureTrouvee = factures.find(
+        f => f.type === type && f.statut !== 'PAYEE'
+      );
+    }
+    
+    // SI PAS TROUVÉ, essaie en ignorant la casse
+    if (!factureTrouvee) {
+      console.log("Essai avec casse ignorée sur typeFacture");
+      factureTrouvee = factures.find(
+        f => f.typeFacture?.toLowerCase() === type.toLowerCase() && f.statut !== 'PAYEE'
+      );
+    }
+    
+    // SI PAS TROUVÉ, essaie avec mapping des synonymes
+    if (!factureTrouvee) {
+      console.log("Essai avec mapping des synonymes");
+      const synonymes = {
+        'electricite': ['electricite', 'steg', 'électricité', 'elec'],
+        'eau': ['eau', 'sonede'],
+        'wifi': ['wifi', 'internet', 'tt'],
+        'etude': ['etude', 'étude', 'inscription'],
+        'amende': ['amende', 'radar']
+      };
+      
+      const typesPossibles = synonymes[type] || [type];
+      
+      factureTrouvee = factures.find(f => {
+        const typeFactureValue = f.typeFacture || f.type;
+        return typesPossibles.some(t => 
+          typeFactureValue?.toLowerCase() === t.toLowerCase()
+        ) && f.statut !== 'PAYEE';
+      });
+    }
+    
+    if (factureTrouvee) {
+      console.log("✅ Facture trouvée:", factureTrouvee);
+      setFacture(factureTrouvee);
+    } else {
+      // Affiche tous les types disponibles pour aider au debug
+      const typesDisponibles = factures.map(f => f.typeFacture || f.type);
+      console.log("❌ Types disponibles dans le backend:", typesDisponibles);
+      setError(`Aucune facture ${config.label} trouvée. Types disponibles: ${typesDisponibles.join(', ')}`);
+    }
+  } catch (err) {
+    console.error('Erreur chargement facture:', err);
+    setError('Impossible de charger les factures');
+  } finally {
+    setChargementFacture(false);
+  }
+};
 
     chargerFacture();
   }, [type, navigate, config.label]);
 
-const handlePay = async () => {
-    if (cardNumber.length < 19 || cardHolder.trim() === '' || expiry.length < 5 || cvv.length < 3) {
-      alert('Veuillez remplir correctement les informations de votre carte.');
+  // ✅ BUG 3 FIX: handlePay corrigé avec les bonnes variables
+  const handlePay = async (e) => {
+    e?.preventDefault();
+    
+    if (!facture) {
+      setError('Aucune facture à payer');
       return;
     }
 
+    // Validation selon la méthode choisie
+    if (methode === 'carte') {
+      if (cardNumber.length < 16 || expiry.length < 5 || cvv.length < 3) {
+        setError('Veuillez remplir correctement les informations de votre carte.');
+        return;
+      }
+    } else if (methode === 'edinar') {
+      if (phone.length < 8) {
+        setError('Veuillez entrer un numéro de téléphone valide.');
+        return;
+      }
+    } else if (methode === 'virement') {
+      if (rib.length < 10) {
+        setError('Veuillez entrer un RIB valide.');
+        return;
+      }
+    }
+
     setLoading(true);
+    setError('');
 
     try {
-      // Nettoyage du montant pour le transformer en Double Java
-      const montantNumerique = parseFloat(facture.total);
-      const methode = paymentType.toUpperCase();
-
-      // ÉTAPE A : Initier le paiement
+      // ✅ Utiliser facture.reference (pas ref), methode (pas paymentType), facture.montant (pas total)
       const initiation = await paiementAPI.initierPaiement(
-        facture.ref,
-        methode,
-        montantNumerique
+        facture.reference,
+        methode.toUpperCase(),
+        facture.montant
       );
 
-      // ÉTAPE B : Confirmer le paiement
-      await paiementAPI.confirmerPaiement(initiation.numeroTransaction);
-
-      setStep('success');
+      // ✅ Récupérer le reçu après confirmation
+      const recuData = await paiementAPI.confirmerPaiement(initiation.numeroTransaction);
+      setRecu(recuData);
+      setSuccess(true);
 
     } catch (err) {
       // GESTION SPÉCIFIQUE : Si la facture est déjà payée, on traite ça comme un succès
-      if (err.message.includes("déjà effectué") || err.message.includes("déjà payée")) {
-        setStep('success');
+      if (err.message?.includes("déjà effectué") || err.message?.includes("déjà payée")) {
+        setSuccess(true);
       } else {
         console.error("Erreur de paiement:", err);
-        alert(err.message || "Le paiement a échoué.");
+        setError(err.message || "Le paiement a échoué.");
       }
     } finally {
       setLoading(false);

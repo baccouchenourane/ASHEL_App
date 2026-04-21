@@ -1,111 +1,114 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, ChevronLeft, Clock, CheckCircle, XCircle,
+  FileText, ChevronLeft, Clock, CheckCircle, XCircle,
   AlertCircle, Plus, Signal, Wifi, Battery, RefreshCw,
-  LayoutGrid, FileText, CreditCard, Users, User,
-  ShieldCheck, X
+  LayoutGrid, CreditCard, Users, User,
+  ShieldCheck, X, Send
 } from 'lucide-react';
 import logoAshel from '../assets/logo_ashel.png';
 import NotificationBell from './NotificationBell';
 
-// ── Status configuration ──────────────────────────────────────────────────────
+// ── Status config — mirrors StatutReclamation enum ────────────────────────────
+// Maps backend enum values to display config
 const STATUT_CONFIG = {
-  NOUVEAU:  { color: '#E70011', bg: '#fef2f2', border: '#fecaca', icon: AlertCircle, label: 'Nouveau'  },
-  EN_COURS: { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En cours' },
-  RESOLU:   { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Résolu'   },
-  REJETE:   { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Rejeté'   },
+  DEPOSEE:       { color: '#E70011', bg: '#fef2f2', border: '#fecaca', icon: AlertCircle, label: 'Déposée'      },
+  EN_TRAITEMENT: { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En traitement' },
+  CLOTUREE:      { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Clôturée'     },
+  // Admin action targets (sent via PATCH)
+  EN_COURS:      { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En cours'     },
+  RESOLU:        { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Résolue'      },
+  REJETE:        { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Rejetée'      },
 };
 
+// Statuts shown in filter tabs (backend enum values)
 const FILTER_TABS = [
-  { key: 'ALL', label: 'Tous' },
-  ...Object.entries(STATUT_CONFIG).map(([k, v]) => ({ key: k, label: v.label })),
+  { key: 'ALL',           label: 'Toutes'        },
+  { key: 'DEPOSEE',       label: 'Déposées'      },
+  { key: 'EN_TRAITEMENT', label: 'En traitement' },
+  { key: 'CLOTUREE',      label: 'Clôturées'     },
 ];
 
-const API = 'http://localhost:8081/api/signalements';
+const API = 'http://localhost:8081/api/reclamations';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const getUser = () => {
+  try { return JSON.parse(localStorage.getItem('user_ashel') || '{}'); } catch { return {}; }
+};
+
+const getIsAdmin = () => {
+  const role = localStorage.getItem('user_role');
+  if (role) return role === 'ADMIN';
+  return getUser().role === 'ADMIN';
+};
 
 // ── Component ─────────────────────────────────────────────────────────────────
-const SignalementList = () => {
-  const navigate = useNavigate();
+const ReclamationList = () => {
+  const navigate  = useNavigate();
+  const isAdmin   = getIsAdmin();
+  const user      = getUser();
+  // citoyenCin is a String in the backend
+  const citoyenCin = user.cin ? String(user.cin) : null;
+  // numeric id for NotificationBell
+  const citoyenId  = user.id || user.cin || null;
 
-  // Detect admin role — checks dedicated key first, then user_ashel object
-  const isAdmin = (() => {
-    const role = localStorage.getItem('user_role');
-    if (role) return role === 'ADMIN';
-    try {
-      const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
-      return user.role === 'ADMIN';
-    } catch { return false; }
-  })();
-
-  // Citizen ID for notifications
-  const citoyenId = (() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
-      return user.id || user.cin || null;
-    } catch { return null; }
-  })();
-
-  const [signalements, setSignalements] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [refreshing, setRefreshing]     = useState(false);
+  const [reclamations, setReclamations] = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
   const [activeFilter, setActiveFilter] = useState('ALL');
-  const [toast, setToast]               = useState(null); // { type: 'success'|'error', text }
+  const [toast,        setToast]        = useState(null);
 
-  // ── Data fetching ───────────────────────────────────────────────────────────
+  // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      // Admin sees all signalements; citizen sees only their own
-      let url = API;
-      if (!isAdmin) {
-        const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
-        const citoyenId = user.cin || 1;
-        url = `${API}/citoyen/${citoyenId}`;
-      }
-      const res  = await fetch(url);
+      const url = isAdmin ? API : `${API}/citoyen/${citoyenCin || '0'}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Erreur serveur');
-      const data = await res.json();
-      setSignalements(data);
+      setReclamations(await res.json());
     } catch {
-      showToast('error', 'Impossible de charger les signalements.');
+      showToast('error', 'Impossible de charger les réclamations.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, citoyenCin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ── Toast helper ────────────────────────────────────────────────────────────
+  // ── Toast ─────────────────────────────────────────────────────────────────
   const showToast = (type, text) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Status change (admin only) ──────────────────────────────────────────────
+  // ── Change status (admin) ─────────────────────────────────────────────────
   const changerStatut = async (id, statut) => {
     try {
       const res = await fetch(`${API}/${id}/statut?statut=${statut}`, { method: 'PATCH' });
       if (!res.ok) throw new Error();
-      setSignalements(prev => prev.map(s => s.id === id ? { ...s, statut } : s));
-      showToast('success', `Statut mis à jour : ${STATUT_CONFIG[statut]?.label}`);
+      // Update local state with the new statut value
+      setReclamations(prev => prev.map(r => r.id === id ? { ...r, statut } : r));
+      const label = STATUT_CONFIG[statut]?.label || statut;
+      showToast('success', `Statut mis à jour : ${label}`);
     } catch {
       showToast('error', 'Erreur lors de la mise à jour du statut.');
     }
   };
 
-  // ── Filtered list ───────────────────────────────────────────────────────────
+  // ── Filter ────────────────────────────────────────────────────────────────
   const filtered = activeFilter === 'ALL'
-    ? signalements
-    : signalements.filter(s => s.statut === activeFilter);
+    ? reclamations
+    : reclamations.filter(r => r.statut === activeFilter);
 
-  // ── Stats ───────────────────────────────────────────────────────────────────
-  const stats = Object.entries(STATUT_CONFIG).map(([key, cfg]) => ({
-    key, cfg, count: signalements.filter(s => s.statut === key).length,
-  }));
+  // ── Stats (count per statut) ──────────────────────────────────────────────
+  const stats = [
+    { key: 'DEPOSEE',       cfg: STATUT_CONFIG.DEPOSEE       },
+    { key: 'EN_TRAITEMENT', cfg: STATUT_CONFIG.EN_TRAITEMENT },
+    { key: 'CLOTUREE',      cfg: STATUT_CONFIG.CLOTUREE      },
+  ].map(s => ({ ...s, count: reclamations.filter(r => r.statut === s.key).length }));
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={S.screenWrapper}>
       <div className="app-container">
@@ -125,10 +128,7 @@ const SignalementList = () => {
             </button>
             <img src={logoAshel} alt="ASHEL" style={S.logo} />
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {/* Notification bell — citizen only */}
-              {!isAdmin && (
-                <NotificationBell citoyenId={citoyenId} />
-              )}
+              {!isAdmin && <NotificationBell citoyenId={citoyenId} />}
               <button
                 onClick={() => fetchData(true)}
                 style={S.iconBtn}
@@ -145,30 +145,32 @@ const SignalementList = () => {
 
           <div style={S.heroBody}>
             <div style={S.heroIconBox}>
-              {isAdmin ? <ShieldCheck size={22} color="white" /> : <AlertTriangle size={22} color="white" />}
+              {isAdmin ? <ShieldCheck size={22} color="white" /> : <FileText size={22} color="white" />}
             </div>
             <h2 style={S.heroTitle}>
-              {isAdmin ? 'Gestion des signalements' : 'Mes signalements'}
+              {isAdmin ? 'Gestion des réclamations' : 'Mes réclamations'}
             </h2>
             <p style={S.heroSub}>
               {isAdmin
-                ? `${signalements.length} signalement${signalements.length !== 1 ? 's' : ''} au total`
-                : 'Suivez l\'état de vos signalements'}
+                ? `${reclamations.length} réclamation${reclamations.length !== 1 ? 's' : ''} au total`
+                : 'Suivez l\'état de vos réclamations'}
             </p>
           </div>
 
-          {/* Stats strip — shown when there is data */}
-          {!loading && signalements.length > 0 && (
+          {/* Stats strip */}
+          {!loading && reclamations.length > 0 && (
             <div style={S.statsStrip}>
-              {stats.filter(s => isAdmin || s.count > 0).map(({ key, cfg, count }, i, arr) => (
-                <React.Fragment key={key}>
-                  <div style={S.statItem}>
-                    <span style={{ ...S.statValue, color: cfg.color }}>{count}</span>
-                    <span style={S.statLabel}>{cfg.label}</span>
-                  </div>
-                  {i < arr.length - 1 && <div style={S.statDivider} />}
-                </React.Fragment>
-              ))}
+              {stats
+                .filter(s => isAdmin || s.count > 0)
+                .map(({ key, cfg, count }, i, arr) => (
+                  <React.Fragment key={key}>
+                    <div style={S.statItem}>
+                      <span style={{ ...S.statValue, color: cfg.color }}>{count}</span>
+                      <span style={S.statLabel}>{cfg.label}</span>
+                    </div>
+                    {i < arr.length - 1 && <div style={S.statDivider} />}
+                  </React.Fragment>
+                ))}
             </div>
           )}
         </div>
@@ -188,10 +190,7 @@ const SignalementList = () => {
               <button
                 key={f.key}
                 onClick={() => setActiveFilter(f.key)}
-                style={{
-                  ...S.filterBtn,
-                  ...(activeFilter === f.key ? S.filterBtnActive : {}),
-                }}
+                style={{ ...S.filterBtn, ...(activeFilter === f.key ? S.filterBtnActive : {}) }}
               >
                 {f.label}
               </button>
@@ -210,39 +209,42 @@ const SignalementList = () => {
           ) : filtered.length === 0 ? (
             <div style={S.emptyBox} className="fade-in">
               <div style={S.emptyIconWrap}>
-                <AlertTriangle size={28} color="#CBD5E1" />
+                <FileText size={28} color="#CBD5E1" />
               </div>
               <p style={S.emptyTitle}>
                 {activeFilter !== 'ALL'
-                  ? `Aucun signalement "${STATUT_CONFIG[activeFilter]?.label}"`
-                  : 'Aucun signalement'}
+                  ? `Aucune réclamation "${STATUT_CONFIG[activeFilter]?.label}"`
+                  : 'Aucune réclamation'}
               </p>
               <p style={S.emptySub}>
                 {activeFilter === 'ALL' && !isAdmin
-                  ? 'Vous n\'avez pas encore soumis de signalement.'
+                  ? 'Vous n\'avez pas encore déposé de réclamation.'
                   : 'Aucun résultat pour ce filtre.'}
               </p>
               {!isAdmin && (
-                <button onClick={() => navigate('/signalement')} style={S.emptyBtn}>
-                  <div style={S.emptyBtnIcon}><Plus size={14} color="#E70011" /></div>
-                  Soumettre un signalement
+                <button onClick={() => navigate('/reclamation')} style={S.emptyBtn}>
+                  <div style={S.emptyBtnIcon}><Plus size={14} color="#0056D2" /></div>
+                  Déposer une réclamation
                 </button>
               )}
             </div>
 
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} className="fade-in">
-              {filtered.map(s => {
-                const cfg  = STATUT_CONFIG[s.statut] || STATUT_CONFIG.NOUVEAU;
+              {filtered.map(r => {
+                const cfg  = STATUT_CONFIG[r.statut] || STATUT_CONFIG.DEPOSEE;
                 const Icon = cfg.icon;
                 return (
-                  <div key={s.id} style={{ ...S.card, borderLeftColor: cfg.color }}>
+                  <div key={r.id} style={{ ...S.card, borderLeftColor: cfg.color }}>
 
                     {/* Card header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: s.description ? '8px' : '0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: r.contenu ? '8px' : '0' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={S.cardTitle}>{s.titre}</p>
-                        <p style={S.cardCategory}>{s.categorie}</p>
+                        <p style={S.cardTitle}>{r.objet}</p>
+                        {/* Show citoyenCin for admin */}
+                        {isAdmin && r.citoyenCin && (
+                          <p style={S.cardCategory}>CIN : {r.citoyenCin}</p>
+                        )}
                       </div>
                       <div style={{ ...S.badge, background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
                         <Icon size={11} />
@@ -250,13 +252,13 @@ const SignalementList = () => {
                       </div>
                     </div>
 
-                    {/* Description */}
-                    {s.description && <p style={S.cardDesc}>{s.description}</p>}
+                    {/* Contenu */}
+                    {r.contenu && <p style={S.cardDesc}>{r.contenu}</p>}
 
                     {/* Date */}
                     <p style={S.cardDate}>
-                      {s.dateCreation
-                        ? new Date(s.dateCreation).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
+                      {r.dateDepot
+                        ? new Date(r.dateDepot).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
                         : '—'}
                     </p>
 
@@ -264,25 +266,25 @@ const SignalementList = () => {
                     {isAdmin && (
                       <div style={S.actionsRow}>
                         <ActionBtn
-                          label="En cours"
+                          label="En traitement"
                           icon={<Clock size={11} />}
                           color="#92400E" bg="#FEF3C7" border="#FDE68A"
-                          disabled={s.statut === 'EN_COURS'}
-                          onClick={() => changerStatut(s.id, 'EN_COURS')}
+                          disabled={r.statut === 'EN_TRAITEMENT'}
+                          onClick={() => changerStatut(r.id, 'EN_TRAITEMENT')}
                         />
                         <ActionBtn
-                          label="Résolu"
+                          label="Clôturer"
                           icon={<CheckCircle size={11} />}
                           color="#065F46" bg="#D1FAE5" border="#A7F3D0"
-                          disabled={s.statut === 'RESOLU'}
-                          onClick={() => changerStatut(s.id, 'RESOLU')}
+                          disabled={r.statut === 'CLOTUREE'}
+                          onClick={() => changerStatut(r.id, 'CLOTUREE')}
                         />
                         <ActionBtn
                           label="Rejeter"
                           icon={<XCircle size={11} />}
                           color="#475569" bg="#F1F5F9" border="#E2E8F0"
-                          disabled={s.statut === 'REJETE'}
-                          onClick={() => changerStatut(s.id, 'REJETE')}
+                          disabled={r.statut === 'REJETE'}
+                          onClick={() => changerStatut(r.id, 'REJETE')}
                         />
                       </div>
                     )}
@@ -293,12 +295,12 @@ const SignalementList = () => {
           )}
         </div>
 
-        {/* ── New signalement button (citizen only, when list is non-empty) ── */}
-        {!isAdmin && signalements.length > 0 && (
+        {/* ── New réclamation button (citizen only, when list non-empty) ── */}
+        {!isAdmin && reclamations.length > 0 && (
           <div style={S.fabRow}>
-            <button onClick={() => navigate('/signalement')} style={S.newBtn}>
-              <div style={S.newBtnIcon}><Plus size={14} color="#E70011" /></div>
-              Nouveau signalement
+            <button onClick={() => navigate('/reclamation')} style={S.newBtn}>
+              <div style={S.newBtnIcon}><Plus size={14} color="#0056D2" /></div>
+              Nouvelle réclamation
             </button>
           </div>
         )}
@@ -369,7 +371,7 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
   </div>
 );
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Styles (identical to SignalementList) ─────────────────────────────────────
 const S = {
   screenWrapper: {
     display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -472,7 +474,7 @@ const S = {
   },
   emptyBtnIcon: {
     width: '24px', height: '24px', borderRadius: '7px',
-    background: '#FEF2F2', display: 'flex',
+    background: '#EFF6FF', display: 'flex',
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   card: {
@@ -511,7 +513,7 @@ const S = {
   },
   newBtnIcon: {
     width: '26px', height: '26px', borderRadius: '8px',
-    background: '#FEF2F2', display: 'flex',
+    background: '#EFF6FF', display: 'flex',
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   navBar: {
@@ -523,4 +525,4 @@ const S = {
   },
 };
 
-export default SignalementList;
+export default ReclamationList;

@@ -15,23 +15,27 @@ public class SignalementController {
     @Autowired
     private SignalementService signalementService;
 
-@PostMapping(consumes = "multipart/form-data")
-public ResponseEntity<Signalement> creer(
-        @RequestParam String cin,
-        @RequestParam String categorie,
-        @RequestParam String description,
-        @RequestParam(required = false) List<MultipartFile> photos
-) throws Exception {
-    return ResponseEntity.ok(signalementService.creer(cin, categorie, description, photos));
-}
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<Signalement> creer(
+            @RequestParam String titre,
+            @RequestParam String description,
+            @RequestParam String categorie,
+            @RequestParam Long citoyenId,
+            @RequestParam(required = false) List<MultipartFile> photos
+    ) throws Exception {
+        return ResponseEntity.ok(
+            signalementService.creer(titre, description, categorie, citoyenId, photos)
+        );
+    }
 
-@GetMapping("/citoyen/{cin}")
-public ResponseEntity<List<Signalement>> getByCin(@PathVariable String cin) {
-    return ResponseEntity.ok(signalementService.getByCin(cin));
-}
     @GetMapping
     public ResponseEntity<List<Signalement>> getAll() {
         return ResponseEntity.ok(signalementService.getAll());
+    }
+
+    @GetMapping("/citoyen/{id}")
+    public ResponseEntity<List<Signalement>> getByCitoyen(@PathVariable Long id) {
+        return ResponseEntity.ok(signalementService.getByCitoyen(id));
     }
 
     @PatchMapping("/{id}/statut")

@@ -1,7 +1,6 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,7 +11,7 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "cin", nullable = false)
     private String cin;
 
     @Column(name = "demande_id")
@@ -21,32 +20,128 @@ public class Evaluation {
     @Column(name = "facture_id")
     private Long factureId;
 
-    @Column(nullable = false)
-    private int note;
+    @Column(name = "service_public")
+    private String servicePublic;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "note", nullable = false)
+    private Integer note;
+
+    @Column(name = "commentaire")
     private String commentaire;
 
-    private LocalDateTime dateCreation = LocalDateTime.now();
+    @Column(name = "date_creation")
+    private LocalDateTime dateCreation;
 
-    @AssertTrue(message = "Une évaluation doit cibler soit une demande, soit une facture")
-    public boolean isTargetValid() {
-        return (demandeId != null) ^ (factureId != null);
+    // Constructors
+    public Evaluation() {}
+
+    public Evaluation(String cin, String servicePublic, Integer note, String commentaire) {
+        this.cin = cin;
+        this.servicePublic = servicePublic;
+        this.note = note;
+        this.commentaire = commentaire;
+        this.dateCreation = LocalDateTime.now();
     }
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getCin() { return cin; }
-    public void setCin(String cin) { this.cin = cin; }
-    public Long getDemandeId() { return demandeId; }
-    public void setDemandeId(Long demandeId) { this.demandeId = demandeId; }
-    public Long getFactureId() { return factureId; }
-    public void setFactureId(Long factureId) { this.factureId = factureId; }
-    public int getNote() { return note; }
-    public void setNote(int note) { this.note = note; }
-    public String getCommentaire() { return commentaire; }
-    public void setCommentaire(String commentaire) { this.commentaire = commentaire; }
-    public LocalDateTime getDateCreation() { return dateCreation; }
-    public void setDateCreation(LocalDateTime d) { this.dateCreation = d; }
+    public Evaluation(String cin, Long demandeId, Integer note, String commentaire) {
+        this.cin = cin;
+        this.demandeId = demandeId;
+        this.note = note;
+        this.commentaire = commentaire;
+        this.dateCreation = LocalDateTime.now();
+    }
+
+    public Evaluation(String cin, Long factureId, Integer note, String commentaire) {
+        this.cin = cin;
+        this.factureId = factureId;
+        this.note = note;
+        this.commentaire = commentaire;
+        this.dateCreation = LocalDateTime.now();
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCin() {
+        return cin;
+    }
+
+    public void setCin(String cin) {
+        this.cin = cin;
+    }
+
+    public Long getDemandeId() {
+        return demandeId;
+    }
+
+    public void setDemandeId(Long demandeId) {
+        this.demandeId = demandeId;
+    }
+
+    public Long getFactureId() {
+        return factureId;
+    }
+
+    public void setFactureId(Long factureId) {
+        this.factureId = factureId;
+    }
+
+    public String getServicePublic() {
+        return servicePublic;
+    }
+
+    public void setServicePublic(String servicePublic) {
+        this.servicePublic = servicePublic;
+    }
+
+    public Integer getNote() {
+        return note;
+    }
+
+    public void setNote(Integer note) {
+        this.note = note;
+    }
+
+    public String getCommentaire() {
+        return commentaire;
+    }
+
+    public void setCommentaire(String commentaire) {
+        this.commentaire = commentaire;
+    }
+
+    public LocalDateTime getDateCreation() {
+        return dateCreation;
+    }
+
+    public void setDateCreation(LocalDateTime dateCreation) {
+        this.dateCreation = dateCreation;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (dateCreation == null) {
+            dateCreation = LocalDateTime.now();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Evaluation{" +
+                "id=" + id +
+                ", cin='" + cin + '\'' +
+                ", demandeId=" + demandeId +
+                ", factureId=" + factureId +
+                ", servicePublic='" + servicePublic + '\'' +
+                ", note=" + note +
+                ", commentaire='" + commentaire + '\'' +
+                ", dateCreation=" + dateCreation +
+                '}';
+    }
 }

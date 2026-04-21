@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, Download, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 const PaiementProcess = () => {
-  const { id } = useParams(); // ← était "type", maintenant "id"
+  const { type } = useParams(); // ← était "type", maintenant "id"
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -16,11 +16,18 @@ const PaiementProcess = () => {
     const user = JSON.parse(localStorage.getItem('user_ashel'));
     if (!user?.cin) return;
 
-    fetch(`http://localhost:8080/api/paiement/facture?cin=${user.cin}&type=${id}`)
+    fetch(`http://localhost:8081/api/paiement/facture?cin=${user.cin}&type=${type}`)
       .then(r => r.json())
-      .then(data => setFacture(data))
-      .catch(() => console.error("Erreur chargement facture"));
-  }, [id]);
+      .then(data => {
+      //  Vérifier que c'est bien une facture et pas une erreur
+      if (data.error) {
+        console.error("Erreur backend:", data.error);
+        return;
+      }
+      setFacture(data);
+    })
+    .catch(() => console.error("Erreur chargement facture"));
+}, [id]);
 
   // Initier le paiement via le backend
   const handlePay = async () => {
@@ -29,7 +36,7 @@ const PaiementProcess = () => {
 
     try {
       // Étape A : initier (crée TXN EN_COURS)
-      const initRes = await fetch('http://localhost:8080/api/paiement/initier', {
+      const initRes = await fetch('http://localhost:8081/api/paiement/initier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -42,7 +49,7 @@ const PaiementProcess = () => {
       setNumTxn(initData.numeroTransaction);
 
       // Étape B : confirmer (marque SUCCES + met à jour la facture)
-      await fetch('http://localhost:8080/api/paiement/confirmer', {
+      await fetch('http://localhost:8081/api/paiement/confirmer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ numeroTransaction: initData.numeroTransaction })

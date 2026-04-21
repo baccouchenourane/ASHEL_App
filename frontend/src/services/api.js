@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.13:8081/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 // ─── HELPERS EXPORTÉS ──────────────────────────────────────────────────────
 export const getCin = () => {
   const user = JSON.parse(localStorage.getItem('user_ashel'));
