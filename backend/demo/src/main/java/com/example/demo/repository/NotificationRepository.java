@@ -21,7 +21,4 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("UPDATE Notification n SET n.statut = 'LU' WHERE n.cin = :cin AND n.statut = 'NON_LU'")
     int markAllAsRead(@Param("cin") String cin);
 
-    long countByCitoyenIdAndStatut(Long citoyenId, String nonLu);
-
-    List<Notification> findByCitoyenIdOrderByDateCreationDesc(Long citoyenId);
 }

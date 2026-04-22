@@ -25,6 +25,4 @@ public interface SignalementRepository extends JpaRepository<Signalement, Long> 
     long countByCin(String cin);
 
     long countByStatut(String statut);
-
-    List<Signalement> findByCitoyenId(Long citoyenId);
 }

@@ -365,3 +365,34 @@ UNION ALL
 SELECT 'evaluations',                      COUNT(*)            FROM evaluations
 UNION ALL
 SELECT 'notifications',                    COUNT(*)            FROM notifications;
+SHOW CREATE TABLE evaluations;
+ALTER TABLE evaluations DROP FOREIGN KEY fk_evaluations_user;
+ALTER TABLE evaluations MODIFY cin VARCHAR(255) NOT NULL;
+ALTER TABLE evaluations 
+ADD CONSTRAINT fk_evaluations_user 
+FOREIGN KEY (cin) REFERENCES users(cin);
+SHOW CREATE TABLE notifications;
+SHOW CREATE TABLE reclamations;
+SHOW CREATE TABLE signalements;
+ALTER TABLE notifications 
+DROP FOREIGN KEY fk_notifications_user;
+ALTER TABLE notifications 
+MODIFY cin VARCHAR(255) NOT NULL;
+ALTER TABLE notifications 
+ADD CONSTRAINT fk_notifications_user 
+FOREIGN KEY (cin) REFERENCES users(cin)
+ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE reclamations DROP FOREIGN KEY fk_reclamations_user;
+
+ALTER TABLE reclamations MODIFY cin VARCHAR(255) NOT NULL;
+
+ALTER TABLE reclamations 
+ADD CONSTRAINT fk_reclamations_user 
+FOREIGN KEY (cin) REFERENCES users(cin);
+ALTER TABLE signalements DROP FOREIGN KEY fk_signalements_user;
+
+ALTER TABLE signalements MODIFY cin VARCHAR(255) NOT NULL;
+
+ALTER TABLE signalements 
+ADD CONSTRAINT fk_signalements_user 
+FOREIGN KEY (cin) REFERENCES users(cin);

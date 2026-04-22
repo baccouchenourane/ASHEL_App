@@ -1,187 +1,498 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MapPin, Mic, ImageIcon, Loader2, ShieldCheck, FileText } from 'lucide-react';
+import { Send, MapPin, Mic, Loader2, ShieldCheck, X, FileText } from 'lucide-react'; // ✅ AJOUTÉ FileText
 
-const SupportAide = ({ isEmbedded = false }) => {
-  const [lang, setLang] = useState('fr'); 
+const SupportAide = ({ isEmbedded = false, onClose }) => {
+  const [lang, setLang] = useState('fr');
   const [msg, setMsg] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [chatHistory, setChatHistory] = useState([
-    { role: 'bot', text: "Bienvenue sur GovChain Tunisia. Je suis Amine, votre assistant virtuel. Comment puis-je vous accompagner aujourd'hui ?" }
+    { role: 'bot', text: "Bienvenue sur ASHAL Tunisia. Je suis Amine, votre assistant virtuel. Comment puis-je vous accompagner aujourd'hui ?" }
   ]);
   const chatEndRef = useRef(null);
 
-  useEffect(() => { 
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+  // Scroll automatique vers le dernier message
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, isTyping]);
 
-  const ui = {
-    fr: { 
-      placeholder: "Décrivez votre demande...", 
-      listening: "Amine vous écoute...", 
-      viewDoc: "Consulter le document", 
-      typing: "Amine analyse votre demande...",
-      status: "Session sécurisée par GovChain"
-    },
-    ar: { 
-      placeholder: "كيف يمكنني مساعدتك؟", 
-      listening: "أنا أسمعك...", 
-      viewDoc: "عرض الوثيقة", 
-      typing: "أمين بصدد الكتابة...",
-      status: "اتصال آمن عبر GovChain"
+  // Gestion des réponses par mots-clés
+  const getBotResponse = (userMsg) => {
+    const msgLower = userMsg.toLowerCase();
+    
+    // Documents
+    if (msgLower.includes("extrait") || msgLower.includes("naissance") || msgLower.includes("bulletin") || msgLower.includes("b3") || msgLower.includes("document")) {
+      return lang === 'fr'
+        ? "📄 Les documents administratifs (Extrait de naissance, Bulletin n°3) sont disponibles dans l'onglet 'Administration'. Une fois la demande validée et payée, ils sont instantanément ajoutés à votre Coffre-fort numérique signé et certifié."
+        : "📄 الوثائق الإدارية (مضمون الولادة، Bulletin n°3) متوفرة في قسم 'Administration'. بعد التأكيد والخلاص، تلقاهم طول في Coffre-fort الرقمي متاعك.";
     }
+    
+    // Paiements
+    if (msgLower.includes("paiement") || msgLower.includes("payer") || msgLower.includes("paye") || msgLower.includes("carte") || msgLower.includes("cvv")) {
+      return lang === 'fr'
+        ? " ASHAL accepte 4 modes de paiement sécurisés :\n• Carte Bancaire (Visa/Mastercard)\n• E-Dinar (Poste)\n• Virement Bancaire (RIB)\n• Espèces via bureau de Poste\n\nVérifiez bien votre CVV et date d'expiration pour les paiements par carte."
+        : " ASHAL تقبل 4 طرق دفع آمنة:\n• بطاقة بنكية (Visa/Mastercard)\n• E-Dinar (البوسطة)\n• تحويل بنكي (RIB)\n• كاش في البوسطة\n\nتأكد من CVV وتاريخ انتهاء الصلوحية للبطاقة.";
+    }
+    
+    // Sécurité
+    if (msgLower.includes("sécurité") || msgLower.includes("securite") || msgLower.includes("crypté") || msgLower.includes("securisé")) {
+      return lang === 'fr'
+        ? "🔒 Toutes vos transactions et documents sont cryptés de bout en bout sur ASHAL. Vos données sont protégées par la technologie blockchain tunisienne et conformes à la loi n°2025-12 sur la sécurité numérique."
+        : "🔒 جميع معاملاتك ووثائقك مشفرة بالكامل على ASHAL. بياناتك محمية بتقنية البلوكشين التونسية ومتوافقة مع القانون عدد 12 لسنة 2025 المتعلق بالأمن الرقمي.";
+    }
+    
+    // Suivi de dossiers
+    if (msgLower.includes("suivi") || msgLower.includes("dossier") || msgLower.includes("avancement") || msgLower.includes("notification")) {
+      return lang === 'fr'
+        ? "📋 Pour suivre l'avancement de vos dossiers, cliquez sur l'icône 🔔 en haut à droite. Vous y trouverez :\n• État des signatures\n• Documents prêts\n• Notifications système\n• Alertes de sécurité"
+        : "📋 باش تتبع تقدم أوراقك، انقر على أيقونة 🔔 في الأعلى على اليمين. تلقى فيه:\n• حالة التواقيع\n• وثائق جاهزة\n• إشعارات النظام\n• تنبيهات الأمن";
+    }
+    
+    // Réponse par défaut
+    return lang === 'fr'
+      ? "Je n'ai pas bien saisi votre demande. Souhaitez-vous des informations sur :\n• 📄 Les documents administratifs\n• 💳 Les modes de paiement\n• 🔒 La sécurité des transactions\n• 📋 Le suivi de dossiers"
+      : "ما فهمتكش مليح. تحب معلومات على:\n• 📄 الوثائق الإدارية\n• 💳 طرق الدفع\n• 🔒 أمان المعاملات\n• 📋 متابعة الملفات";
   };
 
-  const handleSend = (textOverride) => {
-    const userMsg = (textOverride || msg).toLowerCase();
-    if (!userMsg.trim()) return;
+  const handleSend = async (textOverride) => {
+    const userMsg = (textOverride || msg).trim();
+    if (!userMsg) return;
 
+    // Ajout du message utilisateur
     setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
     setMsg("");
+    
+    // Simulation de frappe
     setIsTyping(true);
-
+    
+    // Délai de 1s pour simuler la réflexion
     setTimeout(() => {
+      const response = getBotResponse(userMsg);
+      setChatHistory(prev => [...prev, { role: 'bot', text: response }]);
       setIsTyping(false);
-      let response = { role: 'bot', text: "" };
-
-      // --- LOGIQUE DE RÉPONSE BASÉE SUR TES CAPTURES ---
-      
-      // 1. SERVICES ADMINISTRATIFS (Basé sur Capture 2026-04-15 010030)
-      if (userMsg.includes("extrait") || userMsg.includes("naissance") || userMsg.includes("مضمون")) {
-        response.text = lang === 'fr' 
-          ? "L'extrait de naissance est disponible dans l'onglet 'Administration'. Une fois payé, il sera instantanément ajouté à votre Coffre-fort numérique." 
-          : "تجم تطلع مضمون الولادة من قسم 'Administration'. بعد الخلاص، تلقاه طول في الـ Coffre-fort متاعك.";
-      } 
-      else if (userMsg.includes("b3") || userMsg.includes("bulletin") || userMsg.includes("عدلية")) {
-        response.text = lang === 'fr'
-          ? "La demande de Bulletin N°3 est traitée en ligne. Vous recevrez une notification système dès qu'il sera signé et prêt."
-          : "طلب الـ B3 يتم عن بعد. توة تجيك 'Notification' أول ما يحضر و يتصحح إلكترونياً.";
-      }
-      // 2. MODES DE PAIEMENT (Basé sur Capture 2026-04-15 010108)
-      else if (userMsg.includes("payer") || userMsg.includes("paiement") || userMsg.includes("خلاص")) {
-        response.text = lang === 'fr'
-          ? "GovChain accepte quatre modes de paiement : Carte Bancaire (Visa/Mastercard), E-Dinar (Poste), Virement Bancaire (RIB) ou en espèces via un bureau de Poste."
-          : "تجم تخلص بـ 4 طرق: بطاقة بنكية، E-Dinar، تحويل بنكي (Virement) ولا كاش في البوسطة.";
-      }
-      // 3. FACTURES SONEDE (Basé sur Capture 2026-04-15 010103)
-      else if (userMsg.includes("sonede") || userMsg.includes("فاتورة") || userMsg.includes("eau")) {
-        response.text = lang === 'fr' 
-          ? "Pour payer votre facture SONEDE, munissez-vous de la référence (ex: SND-2026). Le montant inclut la consommation et les taxes de 7%." 
-          : "باش تخلص فاتورة الصوناد، استعمل رقم المرجع (SND-2026). المعلوم فيه الاستهلاك و الأداءات (7%).";
-      }
-      // 4. SÉCURITÉ (Basé sur Capture 2026-04-15 010113)
-      else if (userMsg.includes("securite") || userMsg.includes("carte") || userMsg.includes("امن")) {
-        response.text = lang === 'fr' 
-          ? "Toutes vos transactions sont cryptées. Pour les paiements par carte, vérifiez bien le code CVV et la date d'expiration." 
-          : "العمليات الكل مؤمنة. كي تخلص بالكارت، ثبت في الـ CVV و تاريخ نهاية الصلوحية.";
-      }
-      // 5. NOTIFICATIONS (Basé sur Capture 2026-04-15 010034)
-      else if (userMsg.includes("notification") || userMsg.includes("suivi") || userMsg.includes("وينو")) {
-        response.text = lang === 'fr' 
-          ? "Consultez l'icône cloche en haut à droite pour suivre l'état de vos dossiers (en cours de signature, prêt, ou sécurité)." 
-          : "ثبت في علامة الجرس الفوق على اليمين باش تتبع أوراقك (قيد الإنجاز ولا حضرت).";
-      }
-      // 6. DEFAUT
-      else {
-        response.text = lang === 'fr' 
-          ? "Je n'ai pas bien saisi. Souhaitez-vous des informations sur le paiement SONEDE, l'Extrait de naissance ou le suivi de votre B3 ?" 
-          : "ما فهمتكش مليح. تحب معلومات على خلاص الصوناد، المضمون، ولا الـ B3 ؟";
-      }
-
-      setChatHistory(prev => [...prev, response]);
     }, 1000);
   };
 
+  // Géolocalisation - Bureaux des finances
   const handleLocation = () => {
-    setChatHistory(prev => [...prev, { 
-      role: 'bot', 
-      text: lang === 'fr' ? "Je localise les bureaux de poste et recettes des finances les plus proches..." : "قاعد نلوجلك على أقرب بوسطة و قباضة مالية..." 
-    }]);
+    const userMsg = lang === 'fr' ? "Où se trouvent les bureaux ?" : "وين توجد المكاتب؟";
+    
+    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+    setIsTyping(true);
+    
     setTimeout(() => {
+      const response = lang === 'fr'
+        ? "📍 Voici les recettes des finances en Tunisie. Cliquez sur le lien pour ouvrir Google Maps :\n\nhttps://www.google.com/maps/search/Recette+des+finances+Tunisie"
+        : "📍 قباضات المالية في تونس. انقر على الرابط باش تفتح Google Maps:\n\nhttps://www.google.com/maps/search/Recette+des+finances+Tunisie";
+      
+      setChatHistory(prev => [...prev, { role: 'bot', text: response }]);
+      setIsTyping(false);
+      
+      // Ouverture de Google Maps après 1s
+      setTimeout(() => {
         window.open("https://www.google.com/maps/search/Recette+des+finances+Tunisie", '_blank');
+      }, 1000);
     }, 1000);
   };
 
+  // Interface vocale simulée
   const toggleMic = () => {
     setIsListening(true);
+    
+    // Message d'écoute
+    setChatHistory(prev => [...prev, { 
+      role: 'bot', 
+      text: lang === 'fr' ? "🎤 Amine vous écoute..." : "🎤 أمين يسمعك..." 
+    }]);
+    
+    // Après 2s, déclenche une requête prédéfinie
     setTimeout(() => {
       setIsListening(false);
-      handleSend(lang === 'ar' ? "كيفاش نخلص فاتورة" : "Comment payer ma facture");
+      const voiceQuery = lang === 'fr' ? "Comment payer ma facture" : "كيفاش نخلص فاتورة";
+      handleSend(voiceQuery);
     }, 2000);
   };
 
+  // Réinitialisation de la conversation
+  const resetConversation = () => {
+    setChatHistory([
+      { role: 'bot', text: lang === 'fr' 
+        ? "Bonjour ! Je suis Amine. Comment puis-je vous aider aujourd'hui ?" 
+        : "السلام عليكم！أنا أمين. كيفاش نقدر نعاونك اليوم؟" 
+      }
+    ]);
+  };
+
   return (
-    <div style={chatContainer}>
-      <div style={toolBar}>
-        <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
-          <ShieldCheck size={16} color="#10B981" />
-          <span style={{fontSize: '0.65rem', color: '#64748B', fontWeight: '700'}}>{ui[lang].status}</span>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <div style={styles.avatar}>
+            <span style={styles.avatarEmoji}>🤖</span>
+          </div>
+          <div>
+            <h3 style={styles.title}>Amine - Assistant Virtuel</h3>
+            <div style={styles.statusBadge}>
+              <ShieldCheck size={12} color="#10B981" />
+              <span style={styles.statusText}>
+                {lang === 'fr' ? "Session sécurisée" : "اتصال آمن"}
+              </span>
+            </div>
+          </div>
         </div>
-        <div style={{display:'flex', gap:'8px'}}>
-          <button onClick={() => setLang('fr')} style={lang === 'fr' ? activeLang : inactiveLang}>FR</button>
-          <button onClick={() => setLang('ar')} style={lang === 'ar' ? activeLang : inactiveLang}>AR</button>
+        <div style={styles.headerRight}>
+          {/* Boutons de langue */}
+          <div style={styles.langButtons}>
+            <button 
+              onClick={() => setLang('fr')} 
+              style={lang === 'fr' ? styles.langActive : styles.langInactive}
+            >
+              FR
+            </button>
+            <button 
+              onClick={() => setLang('ar')} 
+              style={lang === 'ar' ? styles.langActive : styles.langInactive}
+            >
+              AR
+            </button>
+          </div>
+          {!isEmbedded && onClose && (
+            <button onClick={onClose} style={styles.closeBtn}>
+              <X size={20} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div style={messageArea}>
-        {chatHistory.map((c, i) => (
-          <div key={i} style={{ alignSelf: c.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
-            <div style={{ 
-              ...bubbleStyle, 
-              background: c.role === 'user' ? '#1E293B' : 'white',
-              color: c.role === 'user' ? 'white' : '#1E293B',
-              borderRadius: c.role === 'user' ? '18px 18px 2px 18px' : '2px 18px 18px 18px',
-              border: c.role === 'user' ? 'none' : '1px solid #E2E8F0',
-              direction: (lang === 'ar' && c.role === 'bot') ? 'rtl' : 'ltr'
-            }}>
-              {c.text}
+      {/* Zone de messages */}
+      <div style={styles.messageArea}>
+        {chatHistory.map((message, index) => (
+          <div
+            key={index}
+            style={{
+              ...styles.messageWrapper,
+              justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+            }}
+          >
+            <div
+              style={{
+                ...styles.messageBubble,
+                ...(message.role === 'user' ? styles.userBubble : styles.botBubble),
+                direction: (lang === 'ar' && message.role === 'bot') ? 'rtl' : 'ltr',
+                textAlign: (lang === 'ar' && message.role === 'bot') ? 'right' : 'left',
+              }}
+            >
+              <div style={styles.messageText}>{message.text}</div>
             </div>
           </div>
         ))}
+        
+        {/* Indicateur de frappe */}
         {isTyping && (
-            <div style={typingStyle}>
-                <Loader2 size={14} className="animate-spin" /> {ui[lang].typing}
+          <div style={styles.typingContainer}>
+            <div style={styles.typingBubble}>
+              <Loader2 size={16} style={styles.spinning} />
+              <span style={styles.typingText}>
+                {lang === 'fr' ? "Amine analyse votre demande..." : "أمين بصدد الكتابة..."}
+              </span>
             </div>
+          </div>
         )}
+        
+        {/* Ancre pour scroll automatique */}
         <div ref={chatEndRef} />
       </div>
 
-      <div style={quickActions}>
-         <button onClick={() => handleSend("Extraits")} style={pillBtn}>📜 Extraits</button>
-         <button onClick={() => handleSend("Paiement")} style={pillBtn}>💳 Paiements</button>
-         <button onClick={handleLocation} style={pillBtn}>📍 Bureaux</button>
+      {/* Boutons d'actions rapides */}
+      <div style={styles.quickActions}>
+        <button onClick={() => handleSend("documents")} style={styles.quickBtn}>
+          <FileText size={14} /> {lang === 'fr' ? "Documents" : "الوثائق"}
+        </button>
+        <button onClick={() => handleSend("paiement")} style={styles.quickBtn}>
+          💳 {lang === 'fr' ? "Paiements" : "الدفع"}
+        </button>
+        <button onClick={() => handleSend("sécurité")} style={styles.quickBtn}>
+          🔒 {lang === 'fr' ? "Sécurité" : "الأمان"}
+        </button>
+        <button onClick={() => handleSend("suivi")} style={styles.quickBtn}>
+          📋 {lang === 'fr' ? "Suivi" : "المتابعة"}
+        </button>
+        <button onClick={handleLocation} style={styles.quickBtn}>
+          <MapPin size={14} /> {lang === 'fr' ? "Bureaux" : "المكاتب"}
+        </button>
       </div>
 
-      <div style={inputContainer}>
-        <button onClick={toggleMic} style={{...iconBtn, background: isListening ? '#EF4444' : '#F1F5F9'}}>
+      {/* Zone de saisie */}
+      <div style={styles.inputArea}>
+        <button 
+          onClick={toggleMic} 
+          style={isListening ? styles.micBtnActive : styles.micBtn}
+          disabled={isTyping}
+        >
           <Mic size={20} color={isListening ? "white" : "#64748B"} />
         </button>
-        <input 
-          style={inputStyle}
-          placeholder={ui[lang].placeholder}
+        
+        <input
+          type="text"
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          onKeyPress={(e) => e.key === 'Enter' && !isTyping && handleSend()}
+          placeholder={lang === 'fr' ? "Décrivez votre demande..." : "كيف يمكنني مساعدتك؟"}
+          style={styles.input}
+          disabled={isTyping}
+          dir={lang === 'ar' ? 'rtl' : 'ltr'}
         />
-        <button onClick={() => handleSend()} style={sendBtn}><Send size={18} color="white" /></button>
+        
+        <button 
+          onClick={() => handleSend()} 
+          style={styles.sendBtn}
+          disabled={isTyping || !msg.trim()}
+        >
+          <Send size={18} color="white" />
+        </button>
       </div>
     </div>
   );
 };
 
-// --- STYLES PROFESSIONNELS ---
-const chatContainer = { height: '100%', display: 'flex', flexDirection: 'column', background: '#F8FAFC' };
-const toolBar = { padding: '10px 15px', background: 'white', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-const activeLang = { background: '#1E293B', color: 'white', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', cursor: 'pointer' };
-const inactiveLang = { background: '#F1F5F9', color: '#64748B', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', cursor: 'pointer' };
-const messageArea = { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' };
-const bubbleStyle = { padding: '14px', fontSize: '0.8rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', lineHeight: '1.5', fontWeight: '500' };
-const quickActions = { display: 'flex', gap: '8px', padding: '0 15px 10px 15px', overflowX: 'auto' };
-const pillBtn = { background: 'white', border: '1px solid #E2E8F0', padding: '6px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '700', color: '#1E293B', whiteSpace: 'nowrap', cursor: 'pointer' };
-const typingStyle = { alignSelf: 'flex-start', color: '#64748B', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '5px' };
-const inputContainer = { padding: '15px', background: 'white', borderTop: '1px solid #F1F5F9', display: 'flex', gap: '10px' };
-const inputStyle = { flex: 1, border: 'none', background: '#F1F5F9', padding: '12px 15px', borderRadius: '12px', outline: 'none', fontSize: '0.85rem' };
-const iconBtn = { width: '45px', height: '45px', borderRadius: '12px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
-const sendBtn = { background: '#0056D2', width: '45px', height: '45px', borderRadius: '12px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    background: '#F8FAFC',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  header: {
+    background: 'white',
+    padding: '16px 20px',
+    borderBottom: '1px solid #E2E8F0',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  avatar: {
+    width: '40px',
+    height: '40px',
+    background: 'linear-gradient(135deg, #0056D2 0%, #003A8F 100%)',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarEmoji: {
+    fontSize: '22px',
+  },
+  title: {
+    fontSize: '16px',
+    fontWeight: '700',
+    margin: 0,
+    color: '#1E293B',
+  },
+  statusBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    marginTop: '4px',
+  },
+  statusText: {
+    fontSize: '11px',
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  langButtons: {
+    display: 'flex',
+    gap: '6px',
+    background: '#F1F5F9',
+    padding: '3px',
+    borderRadius: '8px',
+  },
+  langActive: {
+    background: '#1E293B',
+    color: 'white',
+    border: 'none',
+    padding: '4px 12px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  langInactive: {
+    background: 'transparent',
+    color: '#64748B',
+    border: 'none',
+    padding: '4px 12px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#64748B',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '4px',
+  },
+  messageArea: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  messageWrapper: {
+    display: 'flex',
+    width: '100%',
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    lineHeight: '1.5',
+    wordWrap: 'break-word',
+    whiteSpace: 'pre-wrap',
+  },
+  userBubble: {
+    background: '#0056D2',
+    color: 'white',
+    borderRadius: '12px 12px 2px 12px',
+  },
+  botBubble: {
+    background: 'white',
+    color: '#1E293B',
+    border: '1px solid #E2E8F0',
+    borderRadius: '2px 12px 12px 12px',
+  },
+  messageText: {
+    fontWeight: '500',
+  },
+  typingContainer: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+  },
+  typingBubble: {
+    background: 'white',
+    border: '1px solid #E2E8F0',
+    borderRadius: '12px',
+    padding: '10px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  spinning: {
+    animation: 'spin 1s linear infinite',
+  },
+  typingText: {
+    fontSize: '13px',
+    color: '#64748B',
+  },
+  quickActions: {
+    padding: '12px 20px',
+    display: 'flex',
+    gap: '8px',
+    overflowX: 'auto',
+    borderTop: '1px solid #E2E8F0',
+    background: 'white',
+  },
+  quickBtn: {
+    background: '#F8FAFC',
+    border: '1px solid #E2E8F0',
+    padding: '6px 14px',
+    borderRadius: '20px',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#1E293B',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'all 0.2s',
+  },
+  inputArea: {
+    padding: '16px 20px',
+    background: 'white',
+    borderTop: '1px solid #E2E8F0',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+  },
+  micBtn: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    border: '1px solid #E2E8F0',
+    background: '#F8FAFC',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micBtnActive: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    border: 'none',
+    background: '#EF4444',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    animation: 'pulseMic 1s infinite', // ✅ Renommé pour éviter conflit
+  },
+  input: {
+    flex: 1,
+    padding: '10px 16px',
+    border: '1px solid #E2E8F0',
+    borderRadius: '10px',
+    fontSize: '14px',
+    outline: 'none',
+    background: '#F8FAFC',
+    fontFamily: 'inherit',
+  },
+  sendBtn: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    border: 'none',
+    background: '#0056D2',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.2s',
+  },
+};
+
+// ✅ Animation avec noms uniques pour éviter les conflits
+const styleSheet = document.createElement("style");
+styleSheet.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulseMic {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+`;
+document.head.appendChild(styleSheet);
 
 export default SupportAide;
