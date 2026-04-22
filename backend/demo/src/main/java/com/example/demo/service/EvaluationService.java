@@ -24,6 +24,11 @@ public class EvaluationService {
         return evaluationRepository.findAll();
     }
 
+    // ADD THIS MISSING METHOD
+    public List<Evaluation> getAll() {
+        return evaluationRepository.findAll();
+    }
+
     // Get evaluation by ID
     public Evaluation getEvaluationById(Long id) {
         return evaluationRepository.findById(id)
@@ -32,6 +37,11 @@ public class EvaluationService {
 
     // Get evaluations by citizen CIN
     public List<Evaluation> getEvaluationsByCin(String cin) {
+        return evaluationRepository.findByCin(cin);
+    }
+
+    // ADD THIS MISSING METHOD
+    public List<Evaluation> getByCitoyen(String cin) {
         return evaluationRepository.findByCin(cin);
     }
 

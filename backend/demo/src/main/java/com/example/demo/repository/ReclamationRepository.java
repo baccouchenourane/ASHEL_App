@@ -4,17 +4,19 @@ import com.example.demo.model.Reclamation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import java.util.List;
 
+@Repository
 public interface ReclamationRepository extends JpaRepository<Reclamation, Long> {
 
-    // Fixed: Changed from citoyenCin to cin
+    // Find by citizen CIN
     List<Reclamation> findByCin(String cin);
 
-    // Fixed: Changed from findAllByOrderByDateDepotDesc to findAllByOrderByDateCreationDesc
+    // All reclamations ordered by date creation (newest first)
     List<Reclamation> findAllByOrderByDateCreationDesc();
 
-    // Fixed: Changed from findByCitoyenCinOrderByDateDepotDesc to findByCinOrderByDateCreationDesc
+    // Reclamations for a specific citizen ordered by date creation (newest first)
     List<Reclamation> findByCinOrderByDateCreationDesc(String cin);
 
     // Additional useful methods
@@ -29,7 +31,7 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
 
     long countByStatut(String statut);
 
-    List<Reclamation> findAllByOrderByDateDepotDesc();
-
-    List<Reclamation> findByCitoyenCinOrderByDateDepotDesc(String citoyenCin);
+    // REMOVE THESE OLD METHODS - they cause compilation errors:
+    // List<Reclamation> findAllByOrderByDateDepotDesc();
+    // List<Reclamation> findByCitoyenCinOrderByDateDepotDesc(String citoyenCin);
 }

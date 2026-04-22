@@ -1,51 +1,67 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notification")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "notifications")
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "citoyen_id", nullable = false)
-    private Long citoyenId;
+    @Column(name = "cin", nullable = false)
+    private String cin;  // Changed from citoyenId
 
-    /**
-     * Generic reference to the source entity (signalement_id or reclamation_id).
-     * Kept as signalement_id in DB for backward compatibility.
-     */
     @Column(name = "signalement_id")
-    private Long referenceId;
+    private Long signalementId;  // Changed from referenceId
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message", nullable = false)
     private String message;
 
-    /** NON_LU | LU */
-    @Column(nullable = false, length = 10)
-    private String statut = "NON_LU";
+    @Column(name = "statut", nullable = false)
+    private String statut;  // NON_LU or LU
 
-    /**
-     * SIGNALEMENT | RECLAMATION
-     * Allows the frontend to show different icons per type.
-     */
-    @Column(nullable = false, length = 20)
-    private String type = "SIGNALEMENT";
+    @Column(name = "date_creation")
+    private LocalDateTime dateCreation;
 
-    @Column(name = "date_creation", nullable = false, updatable = false)
-    private LocalDateTime dateCreation = LocalDateTime.now();
+    // Constructors
+    public Notification() {}
 
-    @PrePersist
-    protected void onCreate() {
+    public Notification(String cin, String message, String statut) {
+        this.cin = cin;
+        this.message = message;
+        this.statut = statut;
         this.dateCreation = LocalDateTime.now();
     }
 
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getCin() { return cin; }
+    public void setCin(String cin) { this.cin = cin; }
+
+    public Long getSignalementId() { return signalementId; }
+    public void setSignalementId(Long signalementId) { this.signalementId = signalementId; }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+
+    public LocalDateTime getDateCreation() { return dateCreation; }
+    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+
+    @PrePersist
+    protected void onCreate() {
+        if (dateCreation == null) {
+            dateCreation = LocalDateTime.now();
+        }
+        if (statut == null) {
+            statut = "NON_LU";
+        }
+    }
 }

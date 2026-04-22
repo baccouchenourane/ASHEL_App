@@ -2,67 +2,88 @@ package com.example.demo.service;
 
 import com.example.demo.model.Reclamation;
 import com.example.demo.repository.ReclamationRepository;
-import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
+@Transactional
 public class ReclamationService {
 
     @Autowired
     private ReclamationRepository reclamationRepository;
 
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    // ── Create ────────────────────────────────────────────────────────────────
-
+    // Create a new reclamation
     public Reclamation creer(Reclamation reclamation) {
+        if (reclamation.getReference() == null || reclamation.getReference().isEmpty()) {
+            reclamation.setReference("REC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        if (reclamation.getStatut() == null) {
+            reclamation.setStatut("OUVERTE");
+        }
+        if (reclamation.getDateCreation() == null) {
+            reclamation.setDateCreation(LocalDateTime.now());
+        }
         return reclamationRepository.save(reclamation);
     }
 
-    // ── Read ──────────────────────────────────────────────────────────────────
-
-    public List<Reclamation> getAll() {
-        return reclamationRepository.findAllByOrderByDateDepotDesc();
+    // Get all reclamations
+    public List<Reclamation> getAllReclamations() {
+        return reclamationRepository.findAllByOrderByDateCreationDesc();
     }
 
-    public List<Reclamation> getByCitoyen(String citoyenCin) {
-        return reclamationRepository.findByCitoyenCinOrderByDateDepotDesc(citoyenCin);
+    // Get reclamations by citizen CIN
+    public List<Reclamation> getByCitoyen(String cin) {
+        return reclamationRepository.findByCinOrderByDateCreationDesc(cin);
     }
 
-    // ── Change status + auto-notification ────────────────────────────────────
-
-    /**
-     * Changes the status of a réclamation and automatically creates
-     * a notification for the citizen.
-     *
-     * @param id     the réclamation ID
-     * @param statut the new status string (DEPOSEE | EN_TRAITEMENT | CLOTUREE)
-     */
+    // Change reclamation status
     public Reclamation changerStatut(Long id, String statut) {
-        Reclamation r = reclamationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Réclamation introuvable : " + id));
-
-        r.setStatut(com.example.demo.model.StatutReclamation.valueOf(statut.toUpperCase()));
-        Reclamation saved = reclamationRepository.save(r);
-
-        // Resolve citizen numeric ID from CIN for the notification
-        if (saved.getCitoyenCin() != null) {
-            userRepository.findByCin(saved.getCitoyenCin()).ifPresent(user ->
-                notificationService.creerPourReclamation(
-                    user.getId(),
-                    saved.getId(),
-                    statut.toUpperCase()
-                )
-            );
+        // Validate statut
+        if (!statut.matches("OUVERTE|EN_COURS|RESOLUE|FERMEE")) {
+            throw new IllegalArgumentException("Statut invalide. Valeurs acceptées: OUVERTE, EN_COURS, RESOLUE, FERMEE");
         }
 
-        return saved;
+        Reclamation reclamation = reclamationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reclamation not found with id: " + id));
+
+        reclamation.setStatut(statut);
+        reclamation.setDateMaj(LocalDateTime.now());
+
+        return reclamationRepository.save(reclamation);
+    }
+
+    // Get reclamation by ID
+    public Reclamation getReclamationById(Long id) {
+        return reclamationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reclamation not found with id: " + id));
+    }
+
+    // Delete reclamation
+    public void deleteReclamation(Long id) {
+        reclamationRepository.deleteById(id);
+    }
+
+    // Update reclamation
+    public Reclamation updateReclamation(Long id, Reclamation reclamationDetails) {
+        Reclamation reclamation = getReclamationById(id);
+        reclamation.setSujet(reclamationDetails.getSujet());
+        reclamation.setDescription(reclamationDetails.getDescription());
+        reclamation.setTypeReclamation(reclamationDetails.getTypeReclamation());
+        reclamation.setDateMaj(LocalDateTime.now());
+        return reclamationRepository.save(reclamation);
+    }
+
+    // Get reclamations by status
+    public List<Reclamation> getReclamationsByStatut(String statut) {
+        return reclamationRepository.findByStatut(statut);
+    }
+
+    // Count reclamations by citizen
+    public long countByCin(String cin) {
+        return reclamationRepository.countByCin(cin);
     }
 }

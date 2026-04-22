@@ -1,42 +1,90 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonAlias;
-
-import com.example.demo.model.StatutReclamation;
 
 @Entity
 @Table(name = "reclamations")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Reclamation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String objet;
-    private String contenu;
+    @Column(name = "reference", unique = true)
+    private String reference;
 
-    @Enumerated(EnumType.STRING)
-    private StatutReclamation statut = StatutReclamation.DEPOSEE;
+    @Column(name = "cin", nullable = false)
+    private String cin;  // Changed from citoyenCin
 
-    @Column(name = "date_depot")
-    private LocalDateTime dateDepot = LocalDateTime.now();
+    @Column(name = "type_reclamation", nullable = false)
+    private String typeReclamation;
 
-    @Column(name = "date_cloture")
-    private LocalDateTime dateCloture;
+    @Column(name = "sujet", nullable = false)
+    private String sujet;
 
-    @Column(name = "citoyen_cin", nullable = false)
-    @JsonAlias("citoyenId")
-    private String citoyenCin;
+    @Column(name = "description", nullable = false)
+    private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "admin_id")
-    private Administrateur admin;
+    @Column(name = "statut", nullable = false)
+    private String statut;
+
+    @Column(name = "reference_liee")
+    private String referenceLiee;
+
+    @Column(name = "reponse_admin")
+    private String reponseAdmin;
+
+    @Column(name = "date_creation")
+    private LocalDateTime dateCreation;
+
+    @Column(name = "date_maj")
+    private LocalDateTime dateMaj;
+
+    // Constructors
+    public Reclamation() {}
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getReference() { return reference; }
+    public void setReference(String reference) { this.reference = reference; }
+
+    public String getCin() { return cin; }
+    public void setCin(String cin) { this.cin = cin; }
+
+    public String getTypeReclamation() { return typeReclamation; }
+    public void setTypeReclamation(String typeReclamation) { this.typeReclamation = typeReclamation; }
+
+    public String getSujet() { return sujet; }
+    public void setSujet(String sujet) { this.sujet = sujet; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+
+    public String getReferenceLiee() { return referenceLiee; }
+    public void setReferenceLiee(String referenceLiee) { this.referenceLiee = referenceLiee; }
+
+    public String getReponseAdmin() { return reponseAdmin; }
+    public void setReponseAdmin(String reponseAdmin) { this.reponseAdmin = reponseAdmin; }
+
+    public LocalDateTime getDateCreation() { return dateCreation; }
+    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+
+    public LocalDateTime getDateMaj() { return dateMaj; }
+    public void setDateMaj(LocalDateTime dateMaj) { this.dateMaj = dateMaj; }
+
+    @PrePersist
+    protected void onCreate() {
+        if (dateCreation == null) {
+            dateCreation = LocalDateTime.now();
+        }
+        if (statut == null) {
+            statut = "OUVERTE";
+        }
+    }
 }

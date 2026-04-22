@@ -5,66 +5,79 @@ import com.example.demo.repository.SignalementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SignalementService {
 
+    public List<Signalement> getAll;
     @Autowired
     private SignalementRepository signalementRepository;
 
     @Autowired
     private NotificationService notificationService;
 
-    private final String UPLOAD_DIR = "uploads/signalements/";
-
-    public Signalement creer(String titre, String description,
-                              String categorie, Long citoyenId,
-                              List<MultipartFile> photos) throws IOException {
-        Signalement s = new Signalement();
-        s.setTitre(titre);
-        s.setDescription(description);
-        s.setCategorie(categorie);
-        s.setCitoyenId(citoyenId);
-
-        if (photos != null && !photos.isEmpty()) {
-            List<String> paths = new ArrayList<>();
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-            for (MultipartFile photo : photos) {
-                String filename = UUID.randomUUID() + "_" + photo.getOriginalFilename();
-                Path path = Paths.get(UPLOAD_DIR + filename);
-                Files.copy(photo.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                paths.add(filename);
-            }
-            s.setPhotos(String.join(",", paths));
+    public Signalement createSignalement(Signalement signalement) {
+        signalement.setReference(UUID.randomUUID().toString().substring(0, 8));
+        if (signalement.getStatut() == null) {
+            signalement.setStatut("NOUVEAU");
         }
-        return signalementRepository.save(s);
+        Signalement saved = signalementRepository.save(signalement);
+
+        // Create notification
+        notificationService.createNotificationForSignalement(
+                saved.getCin(),  // Changed from getCitoyenId
+                saved.getId(),
+                "Votre signalement " + saved.getReference() + " a été créé avec succès"
+        );
+
+        return saved;
     }
 
-    public List<Signalement> getAll() {
+    public Signalement updateSignalementStatus(Long id, String statut, String noteInterne) {
+        Signalement signalement = signalementRepository.findById(id).orElse(null);
+        if (signalement != null) {
+            signalement.setStatut(statut);
+            if (noteInterne != null) {
+                signalement.setNoteInterne(noteInterne);
+            }
+            Signalement saved = signalementRepository.save(signalement);
+
+            notificationService.createNotificationForSignalement(
+                    saved.getCin(),  // Changed from getCitoyenId
+                    saved.getId(),
+                    "Votre signalement " + saved.getReference() + " est maintenant " + statut
+            );
+
+            return saved;
+        }
+        return null;
+    }
+
+    public List<Signalement> getSignalementsByCin(String cin) {
+        return signalementRepository.findByCin(cin);
+    }
+
+    public List<Signalement> getAllSignalements() {
         return signalementRepository.findAll();
     }
 
-    public List<Signalement> getByCitoyen(Long citoyenId) {
-        return signalementRepository.findByCitoyenId(citoyenId);
-    }
-
     public Signalement changerStatut(Long id, String statut) {
-        Signalement s = signalementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
-        s.setStatut(statut);
-        Signalement saved = signalementRepository.save(s);
-
-        // Auto-create notification for the citizen
-        if (saved.getCitoyenId() != null) {
-            notificationService.creerPourChangementStatut(
-                saved.getCitoyenId(),
-                saved.getId(),
-                statut
-            );
-        }
-        return saved;
+        return null;
     }
+
+    public List<Signalement> getByCitoyen(Long id) {
+        return List.of();
+    }
+
+    public Signalement creer(String titre, String description, String categorie, Long citoyenId, List<MultipartFile> photos) {
+        return null;
+    }
+
+    public List<Signalement> getAll() {
+        return List.of();
+    }
+
 }

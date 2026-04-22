@@ -43,105 +43,42 @@ public class Evaluation {
         this.dateCreation = LocalDateTime.now();
     }
 
-    public Evaluation(String cin, Long demandeId, Integer note, String commentaire) {
+    public Evaluation(String cin, Long demandeId,Long factureId, Integer note, String commentaire) {
         this.cin = cin;
         this.demandeId = demandeId;
+        this.factureId = factureId;
+
         this.note = note;
         this.commentaire = commentaire;
         this.dateCreation = LocalDateTime.now();
     }
 
-    public Evaluation(String cin, Long factureId, Integer note, String commentaire) {
-        this.cin = cin;
-        this.factureId = factureId;
-        this.note = note;
-        this.commentaire = commentaire;
-        this.dateCreation = LocalDateTime.now();
-    }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    // REMOVE THIS DUPLICATE CONSTRUCTOR (line 54) - it's already defined above
+    // public Evaluation(String cin, Long demandeId, Integer note, String commentaire) { ... }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCin() {
-        return cin;
-    }
-
-    public void setCin(String cin) {
-        this.cin = cin;
-    }
-
-    public Long getDemandeId() {
-        return demandeId;
-    }
-
-    public void setDemandeId(Long demandeId) {
-        this.demandeId = demandeId;
-    }
-
-    public Long getFactureId() {
-        return factureId;
-    }
-
-    public void setFactureId(Long factureId) {
-        this.factureId = factureId;
-    }
-
-    public String getServicePublic() {
-        return servicePublic;
-    }
-
-    public void setServicePublic(String servicePublic) {
-        this.servicePublic = servicePublic;
-    }
-
-    public Integer getNote() {
-        return note;
-    }
-
-    public void setNote(Integer note) {
-        this.note = note;
-    }
-
-    public String getCommentaire() {
-        return commentaire;
-    }
-
-    public void setCommentaire(String commentaire) {
-        this.commentaire = commentaire;
-    }
-
-    public LocalDateTime getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(LocalDateTime dateCreation) {
-        this.dateCreation = dateCreation;
-    }
+    // Getters and Setters (keep all your existing getters/setters)
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getCin() { return cin; }
+    public void setCin(String cin) { this.cin = cin; }
+    public Long getDemandeId() { return demandeId; }
+    public void setDemandeId(Long demandeId) { this.demandeId = demandeId; }
+    public Long getFactureId() { return factureId; }
+    public void setFactureId(Long factureId) { this.factureId = factureId; }
+    public String getServicePublic() { return servicePublic; }
+    public void setServicePublic(String servicePublic) { this.servicePublic = servicePublic; }
+    public Integer getNote() { return note; }
+    public void setNote(Integer note) { this.note = note; }
+    public String getCommentaire() { return commentaire; }
+    public void setCommentaire(String commentaire) { this.commentaire = commentaire; }
+    public LocalDateTime getDateCreation() { return dateCreation; }
+    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
 
     @PrePersist
     protected void onCreate() {
         if (dateCreation == null) {
             dateCreation = LocalDateTime.now();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Evaluation{" +
-                "id=" + id +
-                ", cin='" + cin + '\'' +
-                ", demandeId=" + demandeId +
-                ", factureId=" + factureId +
-                ", servicePublic='" + servicePublic + '\'' +
-                ", note=" + note +
-                ", commentaire='" + commentaire + '\'' +
-                ", dateCreation=" + dateCreation +
-                '}';
     }
 }

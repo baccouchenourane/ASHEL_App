@@ -25,8 +25,8 @@ public class EvaluationController {
 
     // Get all evaluations
     @GetMapping
-    public List<Evaluation> getAllEvaluations() {
-        return evaluationService.getAllEvaluations();
+    public ResponseEntity<List<Evaluation>> getAllEvaluations() {
+        return ResponseEntity.ok(evaluationService.getAllEvaluations());
     }
 
     // Get evaluation by ID
@@ -38,14 +38,14 @@ public class EvaluationController {
 
     // Get evaluations by citizen CIN
     @GetMapping("/citizen/{cin}")
-    public List<Evaluation> getEvaluationsByCin(@PathVariable String cin) {
-        return evaluationService.getEvaluationsByCin(cin);
+    public ResponseEntity<List<Evaluation>> getEvaluationsByCin(@PathVariable String cin) {
+        return ResponseEntity.ok(evaluationService.getEvaluationsByCin(cin));
     }
 
     // Get evaluations by service public
     @GetMapping("/service/{servicePublic}")
-    public List<Evaluation> getEvaluationsByServicePublic(@PathVariable String servicePublic) {
-        return evaluationService.getEvaluationsByServicePublic(servicePublic);
+    public ResponseEntity<List<Evaluation>> getEvaluationsByServicePublic(@PathVariable String servicePublic) {
+        return ResponseEntity.ok(evaluationService.getEvaluationsByServicePublic(servicePublic));
     }
 
     // Get average rating for a service
@@ -67,16 +67,5 @@ public class EvaluationController {
     public ResponseEntity<Void> deleteEvaluation(@PathVariable Long id) {
         evaluationService.deleteEvaluation(id);
         return ResponseEntity.noContent().build();
-    }
-}
-
-    @GetMapping
-    public ResponseEntity<List<Evaluation>> getAll() {
-        return ResponseEntity.ok(evaluationService.getAll());
-    }
-
-    @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Evaluation>> getByCitoyen(@PathVariable String id) {
-        return ResponseEntity.ok(evaluationService.getByCitoyen(id));
     }
 }
