@@ -8,25 +8,35 @@ import {
 } from 'lucide-react';
 import logoAshel from '../assets/logo_ashel.png';
 import NotificationBell from './NotificationBell';
+import { useNotifications } from '../hooks/useNotifications';
 
 // ── Status configuration ──────────────────────────────────────────────────────
 const STATUT_CONFIG = {
   NOUVEAU:  { color: '#E70011', bg: '#fef2f2', border: '#fecaca', icon: AlertCircle, label: 'Nouveau'  },
   EN_COURS: { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En cours' },
-  RESOLU:   { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Résolu'   },
-  REJETE:   { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Rejeté'   },
+  TRAITE:   { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Traité'   },
 };
 
 const FILTER_TABS = [
   { key: 'ALL', label: 'Tous' },
-  ...Object.entries(STATUT_CONFIG).map(([k, v]) => ({ key: k, label: v.label })),
+  { key: 'NOUVEAU', label: 'Nouveau' },
+  { key: 'EN_COURS', label: 'En cours' },
+  { key: 'TRAITE', label: 'Traité' },
 ];
 
-const API = 'http://localhost:8081/api/signalements';
+const API = '/api/signalements';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 const SignalementList = () => {
   const navigate = useNavigate();
+
+  // Check authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem('ashel_token');
+    if (!token) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   // Detect admin role — checks dedicated key first, then user_ashel object
   const isAdmin = (() => {
@@ -45,6 +55,9 @@ const SignalementList = () => {
       return user.id || user.cin || null;
     } catch { return null; }
   })();
+
+  // Use notifications hook — filter by SIGNALEMENT type
+  const { notifications, unreadCount, markOne, markAll, refresh } = useNotifications(citoyenId, 'SIGNALEMENT');
 
   const [signalements, setSignalements] = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -127,7 +140,13 @@ const SignalementList = () => {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {/* Notification bell — citizen only */}
               {!isAdmin && (
-                <NotificationBell citoyenId={citoyenId} />
+                <NotificationBell 
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                  markOne={markOne}
+                  markAll={markAll}
+                  refresh={refresh}
+                />
               )}
               <button
                 onClick={() => fetchData(true)}
@@ -271,18 +290,11 @@ const SignalementList = () => {
                           onClick={() => changerStatut(s.id, 'EN_COURS')}
                         />
                         <ActionBtn
-                          label="Résolu"
+                          label="Traité"
                           icon={<CheckCircle size={11} />}
                           color="#065F46" bg="#D1FAE5" border="#A7F3D0"
-                          disabled={s.statut === 'RESOLU'}
-                          onClick={() => changerStatut(s.id, 'RESOLU')}
-                        />
-                        <ActionBtn
-                          label="Rejeter"
-                          icon={<XCircle size={11} />}
-                          color="#475569" bg="#F1F5F9" border="#E2E8F0"
-                          disabled={s.statut === 'REJETE'}
-                          onClick={() => changerStatut(s.id, 'REJETE')}
+                          disabled={s.statut === 'TRAITE'}
+                          onClick={() => changerStatut(s.id, 'TRAITE')}
                         />
                       </div>
                     )}

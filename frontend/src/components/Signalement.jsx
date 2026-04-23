@@ -76,7 +76,7 @@ const Signalement = () => {
       const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
       formData.append('citoyenId', user.cin || '1');
       photos.forEach(photo => formData.append('photos', photo));
-      const response = await fetch('http://localhost:8081/api/signalements', { method: 'POST', body: formData });
+      const response = await fetch('/api/signalements', { method: 'POST', body: formData });
       if (!response.ok) throw new Error('Erreur serveur');
       setSuccess(true);
       setForm({ titre: '', description: '', categorie: '' });

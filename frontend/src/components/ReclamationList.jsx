@@ -4,32 +4,32 @@ import {
   FileText, ChevronLeft, Clock, CheckCircle, XCircle,
   AlertCircle, Plus, Signal, Wifi, Battery, RefreshCw,
   LayoutGrid, CreditCard, Users, User,
-  ShieldCheck, X, Send
+  ShieldCheck, X
 } from 'lucide-react';
 import logoAshel from '../assets/logo_ashel.png';
 import NotificationBell from './NotificationBell';
+import { useNotifications } from '../hooks/useNotifications';
 
 // ── Status config — mirrors StatutReclamation enum ────────────────────────────
 // Maps backend enum values to display config
 const STATUT_CONFIG = {
-  DEPOSEE:       { color: '#E70011', bg: '#fef2f2', border: '#fecaca', icon: AlertCircle, label: 'Déposée'      },
-  EN_TRAITEMENT: { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En traitement' },
-  CLOTUREE:      { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Clôturée'     },
-  // Admin action targets (sent via PATCH)
-  EN_COURS:      { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En cours'     },
-  RESOLU:        { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Résolue'      },
-  REJETE:        { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Rejetée'      },
+  OUVERTE:   { color: '#E70011', bg: '#fef2f2', border: '#fecaca', icon: AlertCircle, label: 'Ouverte'   },
+  EN_COURS:  { color: '#F59E0B', bg: '#fffbeb', border: '#fde68a', icon: Clock,       label: 'En cours'  },
+  RESOLUE:   { color: '#10B981', bg: '#f0fdf4', border: '#bbf7d0', icon: CheckCircle, label: 'Résolue'   },
+  FERMEE:    { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Fermée'    },
+  REJETE:    { color: '#6B7280', bg: '#f8fafc', border: '#e2e8f0', icon: XCircle,     label: 'Rejetée'   },
 };
 
 // Statuts shown in filter tabs (backend enum values)
 const FILTER_TABS = [
-  { key: 'ALL',           label: 'Toutes'        },
-  { key: 'DEPOSEE',       label: 'Déposées'      },
-  { key: 'EN_TRAITEMENT', label: 'En traitement' },
-  { key: 'CLOTUREE',      label: 'Clôturées'     },
+  { key: 'ALL',      label: 'Toutes'   },
+  { key: 'OUVERTE',  label: 'Ouvertes' },
+  { key: 'EN_COURS', label: 'En cours' },
+  { key: 'RESOLUE',  label: 'Résolues' },
+  { key: 'FERMEE',   label: 'Fermées'  },
 ];
 
-const API = 'http://localhost:8081/api/reclamations';
+const API = '/api/reclamations';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const getUser = () => {
@@ -45,12 +45,24 @@ const getIsAdmin = () => {
 // ── Component ─────────────────────────────────────────────────────────────────
 const ReclamationList = () => {
   const navigate  = useNavigate();
+
+  // Check authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem('ashel_token');
+    if (!token) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const isAdmin   = getIsAdmin();
   const user      = getUser();
   // citoyenCin is a String in the backend
   const citoyenCin = user.cin ? String(user.cin) : null;
   // numeric id for NotificationBell
   const citoyenId  = user.id || user.cin || null;
+
+  // Use notifications hook — filter by RECLAMATION type
+  const { notifications, unreadCount, markOne, markAll, refresh } = useNotifications(citoyenId, 'RECLAMATION');
 
   const [reclamations, setReclamations] = useState([]);
   const [loading,      setLoading]      = useState(true);
@@ -103,9 +115,10 @@ const ReclamationList = () => {
 
   // ── Stats (count per statut) ──────────────────────────────────────────────
   const stats = [
-    { key: 'DEPOSEE',       cfg: STATUT_CONFIG.DEPOSEE       },
-    { key: 'EN_TRAITEMENT', cfg: STATUT_CONFIG.EN_TRAITEMENT },
-    { key: 'CLOTUREE',      cfg: STATUT_CONFIG.CLOTUREE      },
+    { key: 'OUVERTE',  cfg: STATUT_CONFIG.OUVERTE  },
+    { key: 'EN_COURS', cfg: STATUT_CONFIG.EN_COURS },
+    { key: 'RESOLUE',  cfg: STATUT_CONFIG.RESOLUE  },
+    { key: 'FERMEE',   cfg: STATUT_CONFIG.FERMEE   },
   ].map(s => ({ ...s, count: reclamations.filter(r => r.statut === s.key).length }));
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -128,7 +141,15 @@ const ReclamationList = () => {
             </button>
             <img src={logoAshel} alt="ASHEL" style={S.logo} />
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {!isAdmin && <NotificationBell citoyenId={citoyenId} />}
+              {!isAdmin && (
+                <NotificationBell 
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                  markOne={markOne}
+                  markAll={markAll}
+                  refresh={refresh}
+                />
+              )}
               <button
                 onClick={() => fetchData(true)}
                 style={S.iconBtn}
@@ -238,12 +259,12 @@ const ReclamationList = () => {
                   <div key={r.id} style={{ ...S.card, borderLeftColor: cfg.color }}>
 
                     {/* Card header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: r.contenu ? '8px' : '0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: r.description ? '8px' : '0' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={S.cardTitle}>{r.objet}</p>
-                        {/* Show citoyenCin for admin */}
-                        {isAdmin && r.citoyenCin && (
-                          <p style={S.cardCategory}>CIN : {r.citoyenCin}</p>
+                        <p style={S.cardTitle}>{r.sujet}</p>
+                        {/* Show cin for admin */}
+                        {isAdmin && r.cin && (
+                          <p style={S.cardCategory}>CIN : {r.cin}</p>
                         )}
                       </div>
                       <div style={{ ...S.badge, background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
@@ -252,13 +273,13 @@ const ReclamationList = () => {
                       </div>
                     </div>
 
-                    {/* Contenu */}
-                    {r.contenu && <p style={S.cardDesc}>{r.contenu}</p>}
+                    {/* Description */}
+                    {r.description && <p style={S.cardDesc}>{r.description}</p>}
 
                     {/* Date */}
                     <p style={S.cardDate}>
-                      {r.dateDepot
-                        ? new Date(r.dateDepot).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
+                      {r.dateCreation
+                        ? new Date(r.dateCreation).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
                         : '—'}
                     </p>
 
@@ -266,25 +287,25 @@ const ReclamationList = () => {
                     {isAdmin && (
                       <div style={S.actionsRow}>
                         <ActionBtn
-                          label="En traitement"
+                          label="En cours"
                           icon={<Clock size={11} />}
                           color="#92400E" bg="#FEF3C7" border="#FDE68A"
-                          disabled={r.statut === 'EN_TRAITEMENT'}
-                          onClick={() => changerStatut(r.id, 'EN_TRAITEMENT')}
+                          disabled={r.statut === 'EN_COURS'}
+                          onClick={() => changerStatut(r.id, 'EN_COURS')}
                         />
                         <ActionBtn
-                          label="Clôturer"
+                          label="Résolue"
                           icon={<CheckCircle size={11} />}
                           color="#065F46" bg="#D1FAE5" border="#A7F3D0"
-                          disabled={r.statut === 'CLOTUREE'}
-                          onClick={() => changerStatut(r.id, 'CLOTUREE')}
+                          disabled={r.statut === 'RESOLUE'}
+                          onClick={() => changerStatut(r.id, 'RESOLUE')}
                         />
                         <ActionBtn
-                          label="Rejeter"
+                          label="Fermée"
                           icon={<XCircle size={11} />}
                           color="#475569" bg="#F1F5F9" border="#E2E8F0"
-                          disabled={r.statut === 'REJETE'}
-                          onClick={() => changerStatut(r.id, 'REJETE')}
+                          disabled={r.statut === 'FERMEE'}
+                          onClick={() => changerStatut(r.id, 'FERMEE')}
                         />
                       </div>
                     )}

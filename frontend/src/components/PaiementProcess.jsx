@@ -16,7 +16,7 @@ const PaiementProcess = () => {
     const user = JSON.parse(localStorage.getItem('user_ashel'));
     if (!user?.cin) return;
 
-    fetch(`http://localhost:8081/api/paiement/facture?cin=${user.cin}&type=${type}`)
+    fetch(`/api/paiement/facture?cin=${user.cin}&type=${type}`)
       .then(r => r.json())
       .then(data => {
       //  Vérifier que c'est bien une facture et pas une erreur
@@ -36,7 +36,7 @@ const PaiementProcess = () => {
 
     try {
       // Étape A : initier (crée TXN EN_COURS)
-      const initRes = await fetch('http://localhost:8081/api/paiement/initier', {
+      const initRes = await fetch('/api/paiement/initier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,7 +49,7 @@ const PaiementProcess = () => {
       setNumTxn(initData.numeroTransaction);
 
       // Étape B : confirmer (marque SUCCES + met à jour la facture)
-      await fetch('http://localhost:8081/api/paiement/confirmer', {
+      await fetch('/api/paiement/confirmer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ numeroTransaction: initData.numeroTransaction })

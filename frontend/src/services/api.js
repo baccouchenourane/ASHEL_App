@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 // ─── HELPERS EXPORTÉS ──────────────────────────────────────────────────────
 export const getCin = () => {
   const user = JSON.parse(localStorage.getItem('user_ashel'));
@@ -6,7 +6,12 @@ export const getCin = () => {
 };
 
 export const getToken = () => {
-  const user = JSON.parse(localStorage.getItem('user_ashel'));
+  // First try to get token from ashel_token key (set by VOTP.jsx)
+  const token = localStorage.getItem('ashel_token');
+  if (token) return token;
+  
+  // Fallback to user_ashel object for backward compatibility
+  const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
   return user?.token || '';
 };
 
@@ -28,14 +33,35 @@ const getHeaders = () => {
   return headers;
 };
 
+// Fetch options with credentials
+const getFetchOptions = (method = 'GET', body = null) => {
+  const options = {
+    method,
+    headers: getHeaders(),
+    credentials: 'include',
+  };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  return options;
+};
+
 // ─── EXPORTS AUTHENTIFICATION ──────────────────────────────────────────────
 export const loginRequest = (cin, password) =>
   fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ cin, password }),
   }).then(async (res) => {
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Non-JSON response from server:", text);
+      throw new Error("Erreur serveur : " + text);
+    }
     if (res.ok && data.token) {
       // Stocker l'utilisateur avec le token sous la clé 'user_ashel'
       const userData = { cin, token: data.token, ...data.user };
@@ -52,6 +78,7 @@ export const authAPI = {
     fetch(`${BASE_URL}/auth/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ cin, code }),
     }).then(handleResponse),
 
@@ -59,6 +86,7 @@ export const authAPI = {
     fetch(`${BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ cin, nom, password, phone }),
     }).then(handleResponse),
 
@@ -66,6 +94,7 @@ export const authAPI = {
     fetch(`${BASE_URL}/auth/resend-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ cin }),
     }).then(handleResponse),
 };
@@ -76,6 +105,7 @@ export const homeAPI = {
     fetch(`${BASE_URL}/home/dashboard?cin=${getCin()}`, {
       method: 'GET',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 
   logout: () => {
@@ -83,14 +113,16 @@ export const homeAPI = {
     return fetch(`${BASE_URL}/home/logout`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify({ cin }),
     }).then(handleResponse);
   },
 
   marquerNotifLue: (id) =>
-    fetch(`${BASE_URL}/home/notifications/lu/${id}`, {
-      method: 'PUT',
+    fetch(`${BASE_URL}/notifications/${id}/mark-read`, {
+      method: 'PATCH',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 };
 
@@ -100,18 +132,21 @@ export const paiementAPI = {
     fetch(`${BASE_URL}/paiement/factures?cin=${getCin()}`, {
       method: 'GET',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 
   getFactureByType: (type) =>
     fetch(`${BASE_URL}/paiement/facture?cin=${getCin()}&type=${type}`, {
       method: 'GET',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 
 initierPaiement: (referenceFacture, methodePaiement, montant) =>
   fetch(`${BASE_URL}/paiement/initier`, {
     method: 'POST',
     headers: getHeaders(), // <--- TRÈS IMPORTANT
+    credentials: 'include',
     body: JSON.stringify({ 
       cin: getCin(), 
       referenceFacture, 
@@ -124,6 +159,7 @@ initierPaiement: (referenceFacture, methodePaiement, montant) =>
     fetch(`${BASE_URL}/paiement/confirmer`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify({ numeroTransaction }),
     }).then(handleResponse),
 
@@ -131,12 +167,14 @@ initierPaiement: (referenceFacture, methodePaiement, montant) =>
     fetch(`${BASE_URL}/paiement/historique?cin=${getCin()}`, {
       method: 'GET',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 
   getRecu: (numeroTransaction) =>
     fetch(`${BASE_URL}/paiement/recu?numeroTransaction=${numeroTransaction}`, {
       method: 'GET',
       headers: getHeaders(),
+      credentials: 'include',
     }).then(handleResponse),
 };
 

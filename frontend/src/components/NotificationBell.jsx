@@ -29,14 +29,17 @@ export function getNotifMeta(notification) {
   if (type === 'RECLAMATION') {
     if (message.includes('clôturée'))   return { icon: <CheckCircle size={15} color="#10B981" />, bg: '#f0fdf4', label: 'Réclamation', color: '#059669' };
     if (message.includes('traitement')) return { icon: <Clock       size={15} color="#F59E0B" />, bg: '#fffbeb', label: 'Réclamation', color: '#D97706' };
+    if (message.includes('acceptée'))   return { icon: <CheckCircle size={15} color="#10B981" />, bg: '#f0fdf4', label: 'Réclamation', color: '#059669' };
+    if (message.includes('examen'))     return { icon: <Clock       size={15} color="#F59E0B" />, bg: '#fffbeb', label: 'Réclamation', color: '#D97706' };
     return                                     { icon: <FileText    size={15} color="#0056D2" />, bg: '#EFF6FF', label: 'Réclamation', color: '#0056D2' };
   }
 
   // SIGNALEMENT (default)
-  if (message.includes('résolu'))  return { icon: <CheckCircle size={15} color="#10B981" />, bg: '#f0fdf4', label: 'Signalement', color: '#059669' };
-  if (message.includes('cours'))   return { icon: <Clock       size={15} color="#F59E0B" />, bg: '#fffbeb', label: 'Signalement', color: '#D97706' };
-  if (message.includes('rejeté'))  return { icon: <XCircle     size={15} color="#6B7280" />, bg: '#f8fafc', label: 'Signalement', color: '#6B7280' };
-  return                                  { icon: <AlertCircle size={15} color="#E70011" />, bg: '#fef2f2', label: 'Signalement', color: '#E70011' };
+  if (message.includes('résolu'))      return { icon: <CheckCircle size={15} color="#10B981" />, bg: '#f0fdf4', label: 'Signalement', color: '#059669' };
+  if (message.includes('traitement'))  return { icon: <Clock       size={15} color="#F59E0B" />, bg: '#fffbeb', label: 'Signalement', color: '#D97706' };
+  if (message.includes('cours'))       return { icon: <Clock       size={15} color="#F59E0B" />, bg: '#fffbeb', label: 'Signalement', color: '#D97706' };
+  if (message.includes('rejeté'))      return { icon: <XCircle     size={15} color="#6B7280" />, bg: '#f8fafc', label: 'Signalement', color: '#6B7280' };
+  return                                     { icon: <AlertCircle size={15} color="#E70011" />, bg: '#fef2f2', label: 'Signalement', color: '#E70011' };
 }
 
 export function timeAgo(dateStr) {
@@ -81,7 +84,16 @@ const NotificationBell = ({
   const handleItemClick = async (n) => {
     if (n.statut === 'NON_LU' && markOne) await markOne(n.id);
     setOpen(false);
-    navigate(n.type === 'RECLAMATION' ? '/reclamation' : '/signalement-list');
+    
+    // Navigate based on notification type
+    if (n.type === 'RECLAMATION') {
+      navigate('/reclamation-list');
+    } else if (n.type === 'SIGNALEMENT') {
+      navigate('/signalement-list');
+    } else {
+      // Default navigation for other types
+      navigate('/home');
+    }
   };
 
   return (

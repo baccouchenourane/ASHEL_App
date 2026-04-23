@@ -228,7 +228,7 @@ const RegisterForm = () => {
       localStorage.setItem('biometric_data', JSON.stringify(biometricData));
       
       // Appel au Backend
-      await axios.post("http://localhost:8081/api/auth/register", {
+      await axios.post("/api/auth/register", {
         cin: form.cin,
         nom: `${form.prenom} ${form.nom}`,
         password: form.password,

@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ReclamationRequest;
 import com.example.demo.model.Reclamation;
 import com.example.demo.service.ReclamationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +13,20 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reclamations")
-@CrossOrigin(origins = "*")
 public class ReclamationController {
 
     @Autowired
     private ReclamationService reclamationService;
 
     @PostMapping
-    public ResponseEntity<Reclamation> creer(@RequestBody Reclamation reclamation) {
+    public ResponseEntity<Reclamation> creer(@RequestBody ReclamationRequest request) {
+        // Map DTO to entity
+        Reclamation reclamation = new Reclamation();
+        reclamation.setCin(request.getCitoyenId());
+        reclamation.setTypeReclamation("SERVICE"); // Default type
+        reclamation.setSujet(request.getObjet());
+        reclamation.setDescription(request.getContenu());
+        
         Reclamation created = reclamationService.creer(reclamation);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }

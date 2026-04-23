@@ -16,6 +16,9 @@ public class ReclamationService {
     @Autowired
     private ReclamationRepository reclamationRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     // Create a new reclamation
     public Reclamation creer(Reclamation reclamation) {
         if (reclamation.getReference() == null || reclamation.getReference().isEmpty()) {
@@ -27,7 +30,16 @@ public class ReclamationService {
         if (reclamation.getDateCreation() == null) {
             reclamation.setDateCreation(LocalDateTime.now());
         }
-        return reclamationRepository.save(reclamation);
+        Reclamation saved = reclamationRepository.save(reclamation);
+
+        // Create notification
+        notificationService.createNotificationForReclamation(
+                saved.getCin(),
+                saved.getId(),
+                "Votre réclamation " + saved.getReference() + " a été créée avec succès"
+        );
+
+        return saved;
     }
 
     // Get all reclamations
@@ -53,7 +65,17 @@ public class ReclamationService {
         reclamation.setStatut(statut);
         reclamation.setDateMaj(LocalDateTime.now());
 
-        return reclamationRepository.save(reclamation);
+        Reclamation saved = reclamationRepository.save(reclamation);
+
+        // Create notification
+        String message = getReclamationStatusMessage(statut, saved.getReference());
+        notificationService.createNotificationForReclamation(
+                saved.getCin(),
+                saved.getId(),
+                message
+        );
+
+        return saved;
     }
 
     // Get reclamation by ID
@@ -85,5 +107,19 @@ public class ReclamationService {
     // Count reclamations by citizen
     public long countByCin(String cin) {
         return reclamationRepository.countByCin(cin);
+    }
+
+    // Helper method to generate status message
+    private String getReclamationStatusMessage(String statut, String reference) {
+        switch (statut) {
+            case "EN_COURS":
+                return "Votre réclamation " + reference + " est en cours d'examen.";
+            case "RESOLUE":
+                return "Votre réclamation " + reference + " a été acceptée.";
+            case "FERMEE":
+                return "Votre réclamation " + reference + " a été clôturée.";
+            default:
+                return "Votre réclamation " + reference + " a été mise à jour.";
+        }
     }
 }

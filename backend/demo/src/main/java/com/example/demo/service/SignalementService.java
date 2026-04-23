@@ -12,7 +12,7 @@ import java.util.UUID;
 @Service
 public class SignalementService {
 
-    public List<Signalement> getAll;
+    
     @Autowired
     private SignalementRepository signalementRepository;
 
@@ -65,19 +65,67 @@ public class SignalementService {
     }
 
     public Signalement changerStatut(Long id, String statut) {
+        Signalement signalement = signalementRepository.findById(id).orElse(null);
+        if (signalement != null) {
+            signalement.setStatut(statut);
+            Signalement saved = signalementRepository.save(signalement);
+
+            // Create notification with appropriate message
+            String message = getSignalementStatusMessage(statut, saved.getReference());
+            notificationService.createNotificationForSignalement(
+                    saved.getCin(),
+                    saved.getId(),
+                    message
+            );
+
+            return saved;
+        }
         return null;
     }
 
     public List<Signalement> getByCitoyen(Long id) {
-        return List.of();
+        // Convert Long id to String cin for database query
+        return signalementRepository.findByCin(String.valueOf(id));
     }
 
-    public Signalement creer(String titre, String description, String categorie, Long citoyenId, List<MultipartFile> photos) {
-        return null;
+    public Signalement creer(String titre, String description, String categorie, Long citoyenId, List<MultipartFile> photos) throws Exception {
+        Signalement signalement = new Signalement();
+        signalement.setTitre(titre);
+        signalement.setDescription(description);
+        signalement.setCategorie(categorie);
+        signalement.setCin(String.valueOf(citoyenId));
+        signalement.setReference("SIG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        signalement.setStatut("NOUVEAU");
+        
+        // TODO: Handle photo uploads if needed
+        // For now, just save without photos
+        
+        Signalement saved = signalementRepository.save(signalement);
+
+        notificationService.createNotificationForSignalement(
+                saved.getCin(),
+                saved.getId(),
+                "Votre signalement " + saved.getReference() + " a été créé avec succès"
+        );
+
+        return saved;
     }
 
     public List<Signalement> getAll() {
-        return List.of();
+        return signalementRepository.findAll();
     }
 
+    // Helper method to generate status message
+    private String getSignalementStatusMessage(String statut, String reference) {
+        switch (statut) {
+            case "EN_COURS":
+                return "Votre signalement " + reference + " est en cours de traitement.";
+            case "TRAITE":
+                return "Votre signalement " + reference + " a été résolu.";
+            case "REJETE":
+                return "Votre signalement " + reference + " a été rejeté.";
+            default:
+                return "Votre signalement " + reference + " a été mis à jour.";
+        }
+    }
 }

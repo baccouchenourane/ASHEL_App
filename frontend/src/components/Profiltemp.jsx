@@ -51,7 +51,7 @@ const Profil = () => {
 
     if (token) {
       // Fetch live profile from backend
-      fetch('http://localhost:8081/api/users/me', {
+      fetch('/api/users/me', {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => {
@@ -141,7 +141,8 @@ const Profil = () => {
 
       // Optional backend sync — silently ignored if unavailable
       try {
-        await axios.put(`http://localhost:8081/api/users/${toSave.cin}`, {
+        const token = localStorage.getItem('ashel_token');
+        await axios.put(`/api/users/${toSave.cin}`, {
           nom: `${toSave.prenom} ${toSave.nom}`.trim(),
           email: toSave.email,
           phone: toSave.telephone,
@@ -151,6 +152,10 @@ const Profil = () => {
           profession: toSave.profession,
           dateNaissance: toSave.dateNaissance,
           genre: toSave.genre,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
       } catch (_) { /* backend optional */ }
 

@@ -1,51 +1,67 @@
 package com.example.demo.service;
 
 import com.example.demo.model.Notification;
-import com.example.demo.repository.NotificationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
-public class NotificationService {
+public interface NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    /**
+     * Create a generic notification
+     */
+    Notification createNotification(String cin, String type, String message);
 
-    public Notification createNotification(String cin, String message) {
-        Notification notification = new Notification();
-        notification.setCin(cin);  // Changed from setCitoyenId
-        notification.setMessage(message);
-        notification.setStatut("NON_LU");
-        return notificationRepository.save(notification);
-    }
+    /**
+     * Create a signalement notification
+     */
+    Notification createSignalementNotification(String cin, Long signalementId, String message);
 
-    public Notification createNotificationForSignalement(String cin, Long signalementId, String message) {
-        Notification notification = new Notification();
-        notification.setCin(cin);  // Changed from setCitoyenId
-        notification.setSignalementId(signalementId);  // Changed from setReferenceId
-        notification.setMessage(message);
-        notification.setStatut("NON_LU");
-        return notificationRepository.save(notification);
-    }
+    /**
+     * Create a reclamation notification
+     */
+    Notification createReclamationNotification(String cin, Long reclamationId, String message);
 
-    public List<Notification> getNotificationsByCin(String cin) {
-        return notificationRepository.findByCinOrderByDateCreationDesc(cin);
-    }
+    /**
+     * Create notification for signalement (legacy method)
+     */
+    void createNotificationForSignalement(String cin, Long signalementId, String message);
 
-    public long getUnreadCount(String cin) {
-        return notificationRepository.countByCinAndStatut(cin, "NON_LU");
-    }
+    /**
+     * Create notification for reclamation (legacy method)
+     */
+    void createNotificationForReclamation(String cin, Long reclamationId, String message);
 
-    public void markAllAsRead(String cin) {
-        notificationRepository.markAllAsRead(cin);
-    }
+    /**
+     * Get all notifications for a citizen
+     */
+    List<Notification> getNotificationsByCin(String cin);
 
-    public void markAsRead(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId).orElse(null);
-        if (notification != null) {
-            notification.setStatut("LU");
-            notificationRepository.save(notification);
-        }
-    }
+    /**
+     * Get unread notifications for a citizen
+     */
+    List<Notification> getUnreadNotificationsByCin(String cin);
+
+    /**
+     * Get count of unread notifications for a citizen
+     */
+    long getUnreadCountByCin(String cin);
+
+    /**
+     * Mark a notification as read
+     */
+    Notification markAsRead(Long notificationId);
+
+    /**
+     * Mark all notifications as read for a citizen
+     */
+    void markAllAsRead(String cin);
+
+    /**
+     * Delete a notification
+     */
+    void deleteNotification(Long notificationId);
+
+    /**
+     * Delete old notifications
+     */
+    void deleteOldNotifications(int daysOld);
 }

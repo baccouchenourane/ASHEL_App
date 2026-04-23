@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.EvaluationRequest;
 import com.example.demo.model.Evaluation;
 import com.example.demo.service.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/evaluations")
-@CrossOrigin(origins = "*")
 public class EvaluationController {
 
     @Autowired
@@ -18,7 +18,14 @@ public class EvaluationController {
 
     // Create evaluation
     @PostMapping
-    public ResponseEntity<Evaluation> createEvaluation(@RequestBody Evaluation evaluation) {
+    public ResponseEntity<Evaluation> createEvaluation(@RequestBody EvaluationRequest request) {
+        // Map DTO to entity
+        Evaluation evaluation = new Evaluation();
+        evaluation.setCin(request.getCitoyenId()); // citoyenId is now a String (CIN)
+        evaluation.setNote(request.getNote());
+        evaluation.setCommentaire(request.getCommentaire());
+        evaluation.setServicePublic(request.getServicePublic());
+        
         Evaluation savedEvaluation = evaluationService.saveEvaluation(evaluation);
         return new ResponseEntity<>(savedEvaluation, HttpStatus.CREATED);
     }

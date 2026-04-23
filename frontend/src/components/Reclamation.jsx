@@ -41,7 +41,7 @@ const Reclamation = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user_ashel') || '{}');
       const citoyenId = user.cin || 1;
-      const response = await fetch('http://localhost:8081/api/reclamations', {
+      const response = await fetch('/api/reclamations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, objet: objetFinal, citoyenId }),

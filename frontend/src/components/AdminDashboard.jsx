@@ -22,7 +22,7 @@ const AdminDashboard = () => {
 
   const changerStatut = async (id, statut) => {
     try {
-      await fetch(`http://localhost:8081/api/signalements/${id}/statut?statut=${statut}`, {
+      await fetch(`/api/signalements/${id}/statut?statut=${statut}`, {
         method: 'PATCH',
       });
       setSignalements(prev =>

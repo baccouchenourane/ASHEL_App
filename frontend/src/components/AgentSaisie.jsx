@@ -61,7 +61,7 @@ const AgentSaisie = () => {
     };
 
     try {
-      await fetch('http://localhost:8081/api/amende/creer', {
+      await fetch('/api/amende/creer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pv),

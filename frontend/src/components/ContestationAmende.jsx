@@ -41,7 +41,7 @@ const ContestationAmende = () => {
 
     try {
       // Appel backend
-      await fetch('http://localhost:8081/api/amende/contester', {
+      await fetch('/api/amende/contester', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

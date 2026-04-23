@@ -33,9 +33,9 @@ public class SignalementController {
         return ResponseEntity.ok(signalementService.getAll());
     }
 
-    @GetMapping("/citoyen/{id}")
-    public ResponseEntity<List<Signalement>> getByCitoyen(@PathVariable Long id) {
-        return ResponseEntity.ok(signalementService.getByCitoyen(id));
+   @GetMapping("/citoyen/{cin}")
+    public ResponseEntity<List<Signalement>> getByCitoyen(@PathVariable String cin) {
+     return ResponseEntity.ok(signalementService.getSignalementsByCin(cin));
     }
 
     @PatchMapping("/{id}/statut")
