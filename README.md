@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🏛️ ASHEL
+# ASHEL
 ### Application de Services aux Habitants En Ligne
 
 **Projet Freelance — Application Mobile**
