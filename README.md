@@ -356,8 +356,8 @@ Le schéma complet est disponible dans `database/schema.sql`.
 
 Projet réalisé par :
 
-- **Nourane Baccouche Rejichi**
-- **Lina** 
+- **Nourane Baccouche **
+- **Lina Rejichi** 
 - **Maram Mliki**
 
 ---
